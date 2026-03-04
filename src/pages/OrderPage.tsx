@@ -405,7 +405,7 @@ const OrderPage = () => {
         </div>
       </div>
 
-      <Button onClick={handleConfirmOrder} className="w-full" size="lg" disabled={submitting}>
+      <Button onClick={handleConfirmOrder} className="w-full min-h-[48px] touch-manipulation" size="lg" disabled={submitting}>
         {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</> : "Confirm Order"}
       </Button>
     </div>
@@ -429,12 +429,13 @@ const OrderPage = () => {
           href={`https://wa.me/919363926173?text=${encodeURIComponent(`Hi, I just placed an order. Order ID: ${orderNumber}. Please confirm.`)}`}
           target="_blank"
           rel="noopener noreferrer"
+          className="block sm:inline-block"
         >
-          <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
+          <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto min-h-[48px] touch-manipulation">
             Confirm on WhatsApp
           </Button>
         </a>
-        <Button variant="outline" onClick={() => navigate("/")}>
+        <Button variant="outline" onClick={() => navigate("/")} className="min-h-[48px] touch-manipulation w-full sm:w-auto">
           Back to Home
         </Button>
       </div>
@@ -461,25 +462,27 @@ const OrderPage = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 py-10 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
-        <div className="max-w-2xl mx-auto px-4">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 w-full min-w-0">
           {/* Service title */}
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-foreground text-center mb-8">
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xl sm:text-2xl font-bold text-foreground text-center mb-6 sm:mb-8">
             {serviceName || "Order"}
           </motion.h2>
 
-          {/* Step indicator */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            {stepLabels.map((label, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                  i + 1 <= step ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-primary/20 to-primary/5 text-muted-foreground"
-                }`}>
-                  {i + 1}
+          {/* Step indicator - scrollable on small screens */}
+          <div className="overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:mx-0 sm:px-0 pb-2 mb-6 sm:mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div className="flex items-center justify-center gap-2 min-w-max sm:min-w-0">
+              {stepLabels.map((label, i) => (
+                <div key={i} className="flex items-center gap-2 shrink-0">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors shrink-0 ${
+                    i + 1 <= step ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-primary/20 to-primary/5 text-muted-foreground"
+                  }`}>
+                    {i + 1}
+                  </div>
+                  <span className="text-xs text-muted-foreground hidden sm:block whitespace-nowrap">{label}</span>
+                  {i < stepLabels.length - 1 && <div className={`w-4 sm:w-6 h-0.5 shrink-0 ${i + 1 < step ? "bg-primary" : "bg-primary/30"}`} />}
                 </div>
-                <span className="text-xs text-muted-foreground hidden sm:block">{label}</span>
-                {i < stepLabels.length - 1 && <div className={`w-6 h-0.5 ${i + 1 < step ? "bg-primary" : "bg-primary/30"}`} />}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <Card className="shadow-xl border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
@@ -498,12 +501,12 @@ const OrderPage = () => {
 
               {/* Navigation */}
               {!isConfirmStep && (
-                <div className="flex justify-between mt-8 pt-4 border-t">
-                  <Button variant="outline" onClick={prevStep} disabled={step === 1}>
+                <div className="flex justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t">
+                  <Button variant="outline" onClick={prevStep} disabled={step === 1} className="min-h-[44px] touch-manipulation shrink-0">
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
                   {!isLastStepBeforeConfirm && (
-                    <Button onClick={nextStep}>
+                    <Button onClick={nextStep} className="min-h-[44px] touch-manipulation shrink-0">
                       Next <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
                   )}

@@ -44,11 +44,11 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 flex items-center justify-center py-20 px-4">
+      <main className="flex-1 flex items-center justify-center py-8 sm:py-20 px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
           <Card className="shadow-xl border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
+            <CardHeader className="text-center px-4 sm:px-6">
+              <CardTitle className="text-xl sm:text-2xl">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
               <CardDescription>
                 {isLogin ? "Sign in to your account" : "Sign up for Precision Script Hub"}
               </CardDescription>

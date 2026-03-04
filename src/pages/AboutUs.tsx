@@ -29,11 +29,11 @@ const AboutUs = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        <section className="py-20 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
+        <section className="py-12 sm:py-20 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
-              <h1 className="text-4xl font-bold text-foreground mb-4">About Us</h1>
-              <p className="text-muted-foreground text-lg">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 sm:mb-16">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">About Us</h1>
+              <p className="text-muted-foreground text-base sm:text-lg px-2">
                 Learn more about Precision Script Hub and our commitment to quality.
               </p>
             </motion.div>

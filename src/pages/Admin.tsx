@@ -328,8 +328,8 @@ const Admin = () => {
                       ) : !recentOrders.length ? (
                         <p className="text-muted-foreground text-center py-6">No orders yet.</p>
                       ) : (
-                        <div className="overflow-x-auto">
-                          <Table>
+                        <div className="overflow-x-auto -mx-4 sm:mx-0" style={{ WebkitOverflowScrolling: "touch" }}>
+                          <Table className="min-w-[400px]">
                             <TableHeader>
                               <TableRow>
                                 <TableHead>Order #</TableHead>
@@ -382,8 +382,8 @@ const Admin = () => {
                       ) : !orders?.length ? (
                         <div className="p-8 text-center text-muted-foreground">No orders yet.</div>
                       ) : (
-                        <div className="overflow-x-auto">
-                          <Table>
+                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch" }}>
+                          <Table className="min-w-[700px]">
                             <TableHeader>
                               <TableRow>
                                 <TableHead>Order #</TableHead>

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[75vh] sm:min-h-[85vh] flex items-center overflow-hidden">
       {/* Base blue gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary/95 to-slate-900" />
 
@@ -69,10 +69,10 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-100 backdrop-blur-sm mb-8 shadow-lg shadow-black/10"
+            className="inline-flex flex-wrap items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-100 backdrop-blur-sm mb-6 sm:mb-8 shadow-lg shadow-black/10 max-w-full"
           >
             <Sparkles className="h-4 w-4 text-amber-300 shrink-0" />
-            <span>Professional print & bind — delivered with care</span>
+            <span className="text-balance">Professional print & bind — delivered with care</span>
           </motion.div>
 
           <motion.h1
@@ -100,21 +100,21 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.35 }}
-            className="flex flex-wrap items-center gap-4"
+            className="flex flex-wrap items-center gap-3 sm:gap-4"
           >
-            <Link to="/#services">
+            <Link to="/#services" className="min-h-[48px] flex items-center">
               <Button
                 size="lg"
-                className="h-12 px-8 rounded-full text-base font-semibold bg-gradient-to-r from-white via-slate-50 to-primary/10 text-primary hover:opacity-95 shadow-xl shadow-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 animate-glow"
+                className="h-12 min-w-[140px] px-6 sm:px-8 rounded-full text-base font-semibold bg-gradient-to-r from-white via-slate-50 to-primary/10 text-primary hover:opacity-95 shadow-xl shadow-black/20 active:scale-[0.98] transition-all duration-300 animate-glow touch-manipulation"
               >
                 Order Now
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/contact">
+            <Link to="/contact" className="min-h-[48px] flex items-center">
               <Button
                 size="lg"
-                className="h-12 px-8 rounded-full text-base font-semibold border-2 border-white bg-white/10 text-white hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-300"
+                className="h-12 min-w-[140px] px-6 sm:px-8 rounded-full text-base font-semibold border-2 border-white bg-white/10 text-white hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 active:scale-[0.98] transition-all duration-300 touch-manipulation"
               >
                 Get in touch
               </Button>

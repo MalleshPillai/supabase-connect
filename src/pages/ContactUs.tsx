@@ -31,12 +31,12 @@ const ContactUs = () => {
       <Header />
       <main className="flex-1 py-20 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Contact Us</h1>
-            <p className="text-muted-foreground text-lg">Get in touch with us for any inquiries or orders.</p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Contact Us</h1>
+            <p className="text-muted-foreground text-base sm:text-lg px-2">Get in touch with us for any inquiries or orders.</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-12">
             {/* Contact Info */}
             <div className="space-y-6">
               <div className="space-y-4">
@@ -61,8 +61,9 @@ const ContactUs = () => {
                 href="https://wa.me/919363926173?text=Hi%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
+                className="block"
               >
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                <Button className="w-full min-h-[48px] bg-green-600 hover:bg-green-700 text-white touch-manipulation">
                   <MessageCircle className="w-4 h-4 mr-2" /> Chat on WhatsApp
                 </Button>
               </a>

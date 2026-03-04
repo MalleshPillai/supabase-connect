@@ -34,10 +34,10 @@ const Footer = () => {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-sm text-slate-400 hover:text-white transition-colors inline-flex items-center gap-1 group"
+                    className="min-h-[44px] flex items-center text-sm text-slate-400 hover:text-white transition-colors gap-1 group touch-manipulation py-1"
                   >
                     {label}
-                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
+                    <ArrowUpRight className="h-3.5 w-3.5 opacity-0 -translate-y-0.5 translate-x-0.5 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all shrink-0" />
                   </Link>
                 </li>
               ))}
@@ -49,19 +49,19 @@ const Footer = () => {
             <h3 className="font-semibold text-slate-100 mb-4">Contact</h3>
             <ul className="space-y-4 text-sm text-slate-400">
               <li>
-                <a href="tel:+919363926173" className="flex items-center gap-3 hover:text-white transition-colors">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <a href="tel:+919363926173" className="flex items-center gap-3 min-h-[44px] py-2 hover:text-white transition-colors touch-manipulation">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
                     <Phone className="h-4 w-4" />
                   </span>
-                  +91 93639 26173
+                  <span className="break-all">+91 93639 26173</span>
                 </a>
               </li>
               <li>
-                <a href="mailto:info@precisionscripthub.com" className="flex items-center gap-3 hover:text-white transition-colors">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
+                <a href="mailto:info@precisionscripthub.com" className="flex items-center gap-3 min-h-[44px] py-2 hover:text-white transition-colors touch-manipulation">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
                     <Mail className="h-4 w-4" />
                   </span>
-                  info@precisionscripthub.com
+                  <span className="break-all">info@precisionscripthub.com</span>
                 </a>
               </li>
               <li>
@@ -85,11 +85,11 @@ const Footer = () => {
               href="https://wa.me/919363926173"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-slate-500 hover:text-white transition-colors"
+              className="text-sm text-slate-500 hover:text-white transition-colors min-h-[44px] flex items-center touch-manipulation"
             >
               WhatsApp
             </a>
-            <a href="mailto:info@precisionscripthub.com" className="text-sm text-slate-500 hover:text-white transition-colors">
+            <a href="mailto:info@precisionscripthub.com" className="text-sm text-slate-500 hover:text-white transition-colors min-h-[44px] flex items-center touch-manipulation">
               Email
             </a>
           </div>

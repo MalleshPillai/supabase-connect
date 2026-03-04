@@ -100,9 +100,10 @@ const Header = () => {
 
           <button
             type="button"
-            className="md:hidden p-2.5 rounded-lg hover:bg-primary/10 text-foreground"
+            className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center p-2.5 rounded-lg hover:bg-primary/10 active:bg-primary/15 text-foreground touch-manipulation"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -136,7 +137,7 @@ const Header = () => {
                     key={link.label}
                     to={link.to}
                     onClick={() => setMobileOpen(false)}
-                    className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg"
+                    className="min-h-[44px] flex items-center px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg touch-manipulation"
                   >
                     {link.label}
                   </Link>
@@ -145,7 +146,7 @@ const Header = () => {
                   <Link
                     to="/admin"
                     onClick={() => setMobileOpen(false)}
-                    className="px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg flex items-center gap-2"
+                    className="min-h-[44px] flex items-center px-3 py-3 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg gap-2 touch-manipulation"
                   >
                     <Shield className="h-4 w-4" /> Admin
                   </Link>
@@ -154,14 +155,14 @@ const Header = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full justify-start mt-2"
+                    className="w-full justify-start mt-2 min-h-[44px] touch-manipulation"
                     onClick={() => { signOut(); setMobileOpen(false); }}
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </Button>
                 ) : (
                   <Link to="/auth" onClick={() => setMobileOpen(false)} className="mt-2 block">
-                    <Button size="sm" className="w-full rounded-full">
+                    <Button size="sm" className="w-full rounded-full min-h-[44px] touch-manipulation">
                       <User className="h-4 w-4 mr-2" /> Login
                     </Button>
                   </Link>
