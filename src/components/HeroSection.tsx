@@ -69,9 +69,9 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-white/15 to-white/5 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm mb-8"
+            className="inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-100 backdrop-blur-sm mb-8 shadow-lg shadow-black/10"
           >
-            <Sparkles className="h-4 w-4 text-amber-300" />
+            <Sparkles className="h-4 w-4 text-amber-300 shrink-0" />
             <span>Professional print & bind — delivered with care</span>
           </motion.div>
 
@@ -79,10 +79,10 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.1] mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.15] mb-6 drop-shadow-sm"
           >
             Print. Bind.{" "}
-            <span className="bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent drop-shadow-sm">
               Deliver.
             </span>
           </motion.h1>
@@ -91,7 +91,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-lg sm:text-xl text-white/80 max-w-xl leading-relaxed mb-10"
+            className="text-lg sm:text-xl text-white/90 max-w-xl leading-relaxed mb-10 drop-shadow-sm"
           >
             From xerox copies to hardbound books — quality printing and binding for students, professionals, and businesses. Fast, reliable, and hassle-free.
           </motion.p>
@@ -114,8 +114,7 @@ const HeroSection = () => {
             <Link to="/contact">
               <Button
                 size="lg"
-                variant="outline"
-                className="h-12 px-8 rounded-full text-base font-semibold border-2 border-white/40 text-white bg-gradient-to-r from-transparent to-white/5 hover:from-white/15 hover:to-white/10 hover:border-white/60"
+                className="h-12 px-8 rounded-full text-base font-semibold border-2 border-white bg-white/10 text-white hover:bg-white/20 hover:border-white/80 shadow-lg shadow-black/10 transition-all duration-300"
               >
                 Get in touch
               </Button>
@@ -127,7 +126,7 @@ const HeroSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
-            className="mt-12 text-sm text-white/50"
+            className="mt-12 text-sm text-white/60"
           >
             Trusted by students & professionals · Quick turnaround · Transparent pricing
           </motion.p>
