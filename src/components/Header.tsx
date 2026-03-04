@@ -37,9 +37,11 @@ const Header = () => {
             to="/"
             className="flex items-center gap-2.5 shrink-0 group"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/25 transition-all duration-300 group-hover:shadow-primary/40 group-hover:scale-105">
-              <span className="font-extrabold text-lg tracking-tight">P</span>
-            </div>
+            <img
+              src="/IMG_20250714_213759_672.webp"
+              alt="Precision Script Hub"
+              className="h-10 w-10 rounded-xl object-cover shadow-lg shadow-primary/25 transition-all duration-300 group-hover:shadow-primary/40 group-hover:scale-105"
+            />
             <span className="text-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors hidden sm:inline">
               Precision Script Hub
             </span>
