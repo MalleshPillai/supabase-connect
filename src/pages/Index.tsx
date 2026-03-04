@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
+import TrustStrip from "@/components/TrustStrip";
 import ServicesSection from "@/components/ServicesSection";
 import Footer from "@/components/Footer";
 
@@ -13,6 +14,7 @@ const Index = () => {
       <Header />
       <main className="flex-1">
         <HeroSection />
+        <TrustStrip />
         <ServicesSection searchQuery={searchQuery} />
       </main>
       <Footer />

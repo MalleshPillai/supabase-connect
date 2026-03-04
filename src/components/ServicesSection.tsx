@@ -2,13 +2,29 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import {
-  FileText, Printer, Copy, BookOpen, Book, Disc, GraduationCap, School,
+  FileText,
+  Printer,
+  Copy,
+  BookOpen,
+  Book,
+  Disc,
+  GraduationCap,
+  School,
+  ArrowUpRight,
 } from "lucide-react";
 
-const iconMap: Record<string, any> = {
-  FileText, Printer, Copy, BookOpen, Book, Disc, GraduationCap, School,
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  FileText,
+  Printer,
+  Copy,
+  BookOpen,
+  Book,
+  Disc,
+  GraduationCap,
+  School,
 };
 
 interface ServicesSectionProps {
@@ -29,55 +45,86 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
     },
   });
 
-  const filtered = services?.filter((s: any) =>
-    !searchQuery || s.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = services?.filter(
+    (s: { name?: string }) =>
+      !searchQuery ||
+      (s.name && s.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.06 },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0 },
+  };
+
   return (
-    <section id="services" className="py-20 bg-background">
+    <section id="services" className="py-24 bg-gradient-to-b from-background to-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          transition={{ duration: 0.5 }}
+          className="text-center mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Our Services</h2>
+          <Badge variant="secondary" className="mb-4 rounded-full px-4 py-1 text-xs font-medium">
+            What we offer
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-4">
+            Our Services
+          </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Comprehensive printing and binding solutions for students, professionals, and businesses.
+            From quick xerox to premium binding — everything you need under one roof.
           </p>
         </motion.div>
 
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <Card key={i} className="animate-pulse h-40">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="rounded-2xl overflow-hidden animate-pulse h-44 border-0 shadow-lg">
                 <CardContent className="p-6" />
               </Card>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {filtered?.map((service: any, i: number) => {
-              const Icon = iconMap[service.icon] || FileText;
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {filtered?.map((service: { id: string; icon?: string; name?: string; description?: string; slug?: string }, i: number) => {
+              const Icon = (iconMap[service.icon ?? ""] || FileText) as React.ComponentType<{ className?: string }>;
+              const isFeatured = i === 0;
               return (
-                <motion.div
-                  key={service.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Link to={`/order/${service.slug}`}>
-                    <Card className="group cursor-pointer h-full hover:shadow-lg hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
-                      <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                          <Icon className="w-6 h-6 text-primary" />
+                <motion.div key={service.id} variants={item}>
+                  <Link to={`/order/${service.slug ?? ""}`}>
+                    <Card
+                      className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1 ${
+                        isFeatured ? "sm:col-span-2 lg:col-span-1" : ""
+                      }`}
+                    >
+                      <CardContent className="p-6 sm:p-8 flex flex-col h-full min-h-[160px]">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20">
+                            <Icon className="h-7 w-7" />
+                          </div>
+                          <span className="rounded-full p-1.5 text-muted-foreground/70 group-hover:text-primary transition-colors">
+                            <ArrowUpRight className="h-5 w-5" />
+                          </span>
                         </div>
-                        <h3 className="font-semibold text-sm text-foreground leading-tight">
+                        <h3 className="mt-4 text-lg font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
                           {service.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2 flex-1">
                           {service.description}
                         </p>
                       </CardContent>
@@ -86,7 +133,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
                 </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
     </section>
