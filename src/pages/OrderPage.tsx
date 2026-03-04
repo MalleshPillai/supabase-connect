@@ -426,7 +426,7 @@ const OrderPage = () => {
       )}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <a
-          href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi, I just placed an order. Order ID: ${orderNumber}. Please confirm.`)}`}
+          href={`https://wa.me/919363926173?text=${encodeURIComponent(`Hi, I just placed an order. Order ID: ${orderNumber}. Please confirm.`)}`}
           target="_blank"
           rel="noopener noreferrer"
         >

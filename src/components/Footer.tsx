@@ -49,11 +49,11 @@ const Footer = () => {
             <h3 className="font-semibold text-slate-100 mb-4">Contact</h3>
             <ul className="space-y-4 text-sm text-slate-400">
               <li>
-                <a href="tel:+919876543210" className="flex items-center gap-3 hover:text-white transition-colors">
+                <a href="tel:+919363926173" className="flex items-center gap-3 hover:text-white transition-colors">
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
                     <Phone className="h-4 w-4" />
                   </span>
-                  +91 98765 43210
+                  +91 93639 26173
                 </a>
               </li>
               <li>
@@ -82,7 +82,7 @@ const Footer = () => {
           </p>
           <div className="flex gap-6">
             <a
-              href="https://wa.me/919876543210"
+              href="https://wa.me/919363926173"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-slate-500 hover:text-white transition-colors"

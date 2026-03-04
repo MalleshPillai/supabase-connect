@@ -41,7 +41,7 @@ const ContactUs = () => {
             <div className="space-y-6">
               <div className="space-y-4">
                 {[
-                  { icon: Phone, label: "Phone", value: "+91 98765 43210" },
+                  { icon: Phone, label: "Phone", value: "+91 93639 26173" },
                   { icon: Mail, label: "Email", value: "info@precisionscripthub.com" },
                   { icon: MapPin, label: "Address", value: "123 Print Street, Document City, IN 400001" },
                 ].map((item) => (
@@ -58,7 +58,7 @@ const ContactUs = () => {
               </div>
 
               <a
-                href="https://wa.me/919876543210?text=Hi%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services."
+                href="https://wa.me/919363926173?text=Hi%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services."
                 target="_blank"
                 rel="noopener noreferrer"
               >
