@@ -14,16 +14,217 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      orders: {
+        Row: {
+          binding_charges: number | null
+          color_mode: string
+          created_at: string | null
+          delivery_address: string
+          email: string
+          file_name: string | null
+          file_url: string | null
+          first_page_color: boolean | null
+          first_page_photo_sheet: boolean | null
+          full_name: string
+          glass_white_sheet: boolean | null
+          id: string
+          num_copies: number
+          num_pages: number
+          order_number: string
+          page_color: string | null
+          page_range: string | null
+          phone: string
+          preferred_timing: string | null
+          print_all_pages: boolean | null
+          service_slug: string
+          special_charges: number | null
+          spiral_color: string | null
+          status: string
+          subtotal: number
+          total_amount: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          binding_charges?: number | null
+          color_mode?: string
+          created_at?: string | null
+          delivery_address: string
+          email: string
+          file_name?: string | null
+          file_url?: string | null
+          first_page_color?: boolean | null
+          first_page_photo_sheet?: boolean | null
+          full_name: string
+          glass_white_sheet?: boolean | null
+          id?: string
+          num_copies?: number
+          num_pages?: number
+          order_number: string
+          page_color?: string | null
+          page_range?: string | null
+          phone: string
+          preferred_timing?: string | null
+          print_all_pages?: boolean | null
+          service_slug: string
+          special_charges?: number | null
+          spiral_color?: string | null
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          binding_charges?: number | null
+          color_mode?: string
+          created_at?: string | null
+          delivery_address?: string
+          email?: string
+          file_name?: string | null
+          file_url?: string | null
+          first_page_color?: boolean | null
+          first_page_photo_sheet?: boolean | null
+          full_name?: string
+          glass_white_sheet?: boolean | null
+          id?: string
+          num_copies?: number
+          num_pages?: number
+          order_number?: string
+          page_color?: string | null
+          page_range?: string | null
+          phone?: string
+          preferred_timing?: string | null
+          print_all_pages?: boolean | null
+          service_slug?: string
+          special_charges?: number | null
+          spiral_color?: string | null
+          status?: string
+          subtotal?: number
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      pricing: {
+        Row: {
+          id: string
+          key: string
+          label: string
+          updated_at: string | null
+          value: number
+        }
+        Insert: {
+          id?: string
+          key: string
+          label: string
+          updated_at?: string | null
+          value?: number
+        }
+        Update: {
+          id?: string
+          key?: string
+          label?: string
+          updated_at?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_order_number: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +351,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
