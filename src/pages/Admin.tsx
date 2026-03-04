@@ -114,7 +114,7 @@ const Admin = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-8 bg-background">
+      <main className="flex-1 py-8 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-3xl font-bold text-foreground mb-8">
             Admin Dashboard
@@ -127,7 +127,7 @@ const Admin = () => {
             </TabsList>
 
             <TabsContent value="orders">
-              <Card>
+              <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
                 <CardContent className="p-0">
                   {ordersLoading ? (
                     <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" /></div>
@@ -196,7 +196,7 @@ const Admin = () => {
             </TabsContent>
 
             <TabsContent value="pricing">
-              <Card>
+              <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
                 <CardHeader>
                   <CardTitle>Pricing Configuration</CardTitle>
                 </CardHeader>

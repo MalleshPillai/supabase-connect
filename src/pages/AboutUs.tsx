@@ -29,7 +29,7 @@ const AboutUs = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        <section className="py-20 bg-background">
+        <section className="py-20 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-16">
               <h1 className="text-4xl font-bold text-foreground mb-4">About Us</h1>

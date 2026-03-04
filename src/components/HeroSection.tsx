@@ -69,7 +69,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm mb-8"
+            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-white/15 to-white/5 px-4 py-1.5 text-sm text-white/90 backdrop-blur-sm mb-8"
           >
             <Sparkles className="h-4 w-4 text-amber-300" />
             <span>Professional print & bind — delivered with care</span>
@@ -105,7 +105,7 @@ const HeroSection = () => {
             <Link to="/#services">
               <Button
                 size="lg"
-                className="h-12 px-8 rounded-full text-base font-semibold bg-white text-primary hover:bg-white/95 shadow-xl shadow-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 animate-glow"
+                className="h-12 px-8 rounded-full text-base font-semibold bg-gradient-to-r from-white via-slate-50 to-primary/10 text-primary hover:opacity-95 shadow-xl shadow-black/20 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 animate-glow"
               >
                 Order Now
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -115,7 +115,7 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="h-12 px-8 rounded-full text-base font-semibold border-2 border-white/40 text-white bg-transparent hover:bg-white/10 hover:border-white/60"
+                className="h-12 px-8 rounded-full text-base font-semibold border-2 border-white/40 text-white bg-gradient-to-r from-transparent to-white/5 hover:from-white/15 hover:to-white/10 hover:border-white/60"
               >
                 Get in touch
               </Button>

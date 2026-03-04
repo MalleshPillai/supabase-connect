@@ -3,8 +3,9 @@ import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
 
 const Footer = () => {
   return (
-    <footer className="relative border-t border-border/60 bg-slate-900 text-slate-100">
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 to-slate-900 pointer-events-none" />
+    <footer className="relative border-t border-primary/20 text-slate-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary/90 to-slate-900 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 to-transparent pointer-events-none" />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
           {/* Brand */}

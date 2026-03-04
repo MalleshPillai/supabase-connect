@@ -29,7 +29,7 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-20 bg-background">
+      <main className="flex-1 py-20 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">
             <h1 className="text-4xl font-bold text-foreground mb-4">Contact Us</h1>
@@ -45,7 +45,7 @@ const ContactUs = () => {
                   { icon: Mail, label: "Email", value: "info@precisionscripthub.com" },
                   { icon: MapPin, label: "Address", value: "123 Print Street, Document City, IN 400001" },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-start gap-4 p-4 bg-card rounded-xl border">
+                  <div key={item.label} className="flex items-start gap-4 p-4 bg-gradient-to-br from-white/90 to-primary/10 rounded-xl border border-primary/10">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                       <item.icon className="w-5 h-5 text-primary" />
                     </div>
@@ -87,7 +87,7 @@ const ContactUs = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
               onSubmit={handleSubmit}
-              className="bg-card border rounded-2xl p-8 space-y-6 h-fit"
+              className="bg-gradient-to-br from-white/95 to-primary/5 border border-primary/10 rounded-2xl p-8 space-y-6 h-fit shadow-lg"
             >
               <h2 className="text-xl font-semibold text-foreground">Send us a message</h2>
               <div className="space-y-4">

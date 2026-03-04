@@ -10,7 +10,7 @@ const Index = () => {
   const searchQuery = searchParams.get("search") || "";
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-transparent via-transparent to-primary/5">
       <Header />
       <main className="flex-1">
         <HeroSection />

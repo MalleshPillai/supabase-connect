@@ -44,9 +44,9 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 flex items-center justify-center py-20 px-4 bg-background">
+      <main className="flex-1 flex items-center justify-center py-20 px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-          <Card className="shadow-lg">
+          <Card className="shadow-xl border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
               <CardDescription>

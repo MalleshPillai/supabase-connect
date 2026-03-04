@@ -29,7 +29,7 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-gradient-header shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
@@ -56,7 +56,7 @@ const Header = () => {
                   placeholder="Search services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-9 w-full rounded-full border-border/80 bg-muted/50 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
+                  className="h-9 w-full rounded-full border-primary/20 bg-white/50 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
                 />
               </div>
             </form>
@@ -67,7 +67,7 @@ const Header = () => {
               <Link
                 key={link.label}
                 to={link.to}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-lg transition-colors"
+                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg transition-colors"
               >
                 {link.label}
               </Link>
@@ -100,7 +100,7 @@ const Header = () => {
 
           <button
             type="button"
-            className="md:hidden p-2.5 rounded-lg hover:bg-muted text-foreground"
+            className="md:hidden p-2.5 rounded-lg hover:bg-primary/10 text-foreground"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -116,7 +116,7 @@ const Header = () => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="md:hidden border-t border-border/40 bg-background/95 backdrop-blur-xl overflow-hidden"
+            className="md:hidden border-t border-primary/10 bg-gradient-header overflow-hidden"
           >
             <div className="px-4 py-4 space-y-3">
               <form onSubmit={handleSearch}>
@@ -126,7 +126,7 @@ const Header = () => {
                     placeholder="Search services..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-10 rounded-full pl-9 bg-muted/50"
+                    className="h-10 rounded-full pl-9 bg-white/50 border border-primary/10"
                   />
                 </div>
               </form>
@@ -136,7 +136,7 @@ const Header = () => {
                     key={link.label}
                     to={link.to}
                     onClick={() => setMobileOpen(false)}
-                    className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-lg"
+                    className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg"
                   >
                     {link.label}
                   </Link>

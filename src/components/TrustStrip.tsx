@@ -21,7 +21,7 @@ const items = [
 
 const TrustStrip = () => {
   return (
-    <section className="relative py-12 border-b border-border/60 bg-card/50">
+    <section className="relative py-12 border-b border-primary/10 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 12 }}

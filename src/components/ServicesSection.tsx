@@ -65,7 +65,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
   };
 
   return (
-    <section id="services" className="py-24 bg-gradient-to-b from-background to-muted/30">
+    <section id="services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -88,7 +88,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="rounded-2xl overflow-hidden animate-pulse h-44 border-0 shadow-lg">
+              <Card key={i} className="rounded-2xl overflow-hidden animate-pulse h-44 border border-primary/10 bg-gradient-to-br from-white/80 to-primary/10 shadow-lg">
                 <CardContent className="p-6" />
               </Card>
             ))}
@@ -108,7 +108,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
                 <motion.div key={service.id} variants={item}>
                   <Link to={`/order/${service.slug ?? ""}`}>
                     <Card
-                      className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1 ${
+                      className={`group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-white/90 to-primary/10 shadow-md shadow-primary/5 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1 ${
                         isFeatured ? "sm:col-span-2 lg:col-span-1" : ""
                       }`}
                     >

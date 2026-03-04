@@ -460,7 +460,7 @@ const OrderPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 py-10 bg-background">
+      <main className="flex-1 py-10 bg-gradient-to-b from-transparent via-primary/5 to-transparent">
         <div className="max-w-2xl mx-auto px-4">
           {/* Service title */}
           <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-2xl font-bold text-foreground text-center mb-8">
@@ -472,17 +472,17 @@ const OrderPage = () => {
             {stepLabels.map((label, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
-                  i + 1 <= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  i + 1 <= step ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-primary/20 to-primary/5 text-muted-foreground"
                 }`}>
                   {i + 1}
                 </div>
                 <span className="text-xs text-muted-foreground hidden sm:block">{label}</span>
-                {i < stepLabels.length - 1 && <div className={`w-6 h-0.5 ${i + 1 < step ? "bg-primary" : "bg-muted"}`} />}
+                {i < stepLabels.length - 1 && <div className={`w-6 h-0.5 ${i + 1 < step ? "bg-primary" : "bg-primary/30"}`} />}
               </div>
             ))}
           </div>
 
-          <Card className="shadow-lg">
+          <Card className="shadow-xl border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
             <CardContent className="p-6 sm:p-8">
               <AnimatePresence mode="wait">
                 <motion.div
