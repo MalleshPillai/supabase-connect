@@ -6,15 +6,50 @@ import { motion } from "framer-motion";
 const HeroSection = () => {
   return (
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
-      {/* Gradient mesh background */}
+      {/* Base blue gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary/95 to-slate-900" />
+
+      {/* Floating blue waves — SVG layers */}
+      <div className="absolute inset-0 overflow-hidden">
+        <svg className="absolute inset-0 w-full h-full opacity-40 animate-wave-float" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wave-blue-1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="hsl(221, 83%, 55%)" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="hsl(221, 83%, 35%)" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#wave-blue-1)" d="M0 120 Q250 80 500 120 T1000 120 T1500 120 T2000 120 V200 H0 Z" />
+          <path fill="url(#wave-blue-1)" d="M0 180 Q300 140 600 180 T1200 180 T1800 180 T2400 180 V260 H0 Z" />
+          <path fill="url(#wave-blue-1)" d="M0 240 Q200 200 400 240 T800 240 T1200 240 T1600 240 V320 H0 Z" />
+        </svg>
+        <svg className="absolute inset-0 w-full h-full opacity-35 animate-wave-float-slow" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wave-blue-2" x1="0%" y1="100%" x2="0%" y2="0%">
+              <stop offset="0%" stopColor="hsl(217, 91%, 45%)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="hsl(220, 70%, 30%)" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#wave-blue-2)" d="M0 160 Q400 100 800 160 T1600 160 T2400 160 V240 H0 Z" />
+          <path fill="url(#wave-blue-2)" d="M0 220 Q350 180 700 220 T1400 220 T2100 220 V300 H0 Z" />
+        </svg>
+        <svg className="absolute inset-0 w-full h-full opacity-25 animate-wave-float" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="wave-blue-3" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stopColor="hsl(221, 83%, 60%)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(221, 83%, 40%)" stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+          <path fill="url(#wave-blue-3)" d="M0 200 Q500 150 1000 200 T2000 200 V280 H0 Z" />
+        </svg>
+      </div>
+
+      {/* Soft radial glow orbs (floating feel) */}
       <div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-20"
         style={{
           backgroundImage: `
-            radial-gradient(at 40% 20%, hsl(221 83% 55% / 0.4) 0px, transparent 50%),
-            radial-gradient(at 80% 0%, hsl(220 60% 30% / 0.3) 0px, transparent 50%),
-            radial-gradient(at 0% 50%, hsl(221 83% 45% / 0.25) 0px, transparent 50%)
+            radial-gradient(ellipse 80% 50% at 20% 30%, hsl(221 83% 55% / 0.5) 0%, transparent 50%),
+            radial-gradient(ellipse 60% 40% at 80% 70%, hsl(217 91% 45% / 0.4) 0%, transparent 50%)
           `,
         }}
       />

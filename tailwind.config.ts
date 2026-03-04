@@ -80,12 +80,23 @@ export default {
           "0%, 100%": { boxShadow: "0 0 20px -5px hsl(var(--primary) / 0.4)" },
           "50%": { boxShadow: "0 0 30px -5px hsl(var(--primary) / 0.6)" },
         },
+        "wave-float": {
+          "0%, 100%": { transform: "translateX(0) translateY(0) scale(1)" },
+          "33%": { transform: "translateX(-30px) translateY(-15px) scale(1.02)" },
+          "66%": { transform: "translateX(20px) translateY(10px) scale(0.98)" },
+        },
+        "wave-float-slow": {
+          "0%, 100%": { transform: "translateX(0) translateY(0) scale(1)" },
+          "50%": { transform: "translateX(40px) translateY(-12px) scale(1.03)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in-up": "fade-in-up 0.6s ease-out forwards",
         "glow": "glow 2.5s ease-in-out infinite",
+        "wave-float": "wave-float 8s ease-in-out infinite",
+        "wave-float-slow": "wave-float-slow 12s ease-in-out infinite",
       },
     },
   },
