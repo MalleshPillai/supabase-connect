@@ -1,16 +1,64 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Search, User, LogOut, Shield } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 
+const MAX_SUGGESTIONS = 6;
+
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dropdownFocused, setDropdownFocused] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const { user, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const { data: services } = useQuery({
+    queryKey: ["services"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("id, name, slug")
+        .eq("is_active", true)
+        .order("sort_order");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const suggestions = (services ?? []).filter(
+    (s: { name?: string | null }) =>
+      s.name &&
+      searchQuery.trim() &&
+      s.name.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, MAX_SUGGESTIONS);
+
+  const showDropdown = searchQuery.trim().length > 0 && dropdownFocused;
+
+  useEffect(() => {
+    setHighlightedIndex(0);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        searchRef.current && !searchRef.current.contains(target) &&
+        mobileSearchRef.current && !mobileSearchRef.current.contains(target)
+      ) {
+        setDropdownFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const navLinks = [
     { label: "Home", to: "/" },
@@ -19,12 +67,36 @@ const Header = () => {
     { label: "Contact", to: "/contact" },
   ];
 
+  const submitSearch = (query: string) => {
+    const q = query.trim();
+    if (q) {
+      navigate(`/?search=${encodeURIComponent(q)}`);
+      setSearchQuery("");
+      setDropdownFocused(false);
+      setMobileOpen(false);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-      setMobileOpen(false);
+    const selected = suggestions[highlightedIndex];
+    if (selected?.name) {
+      submitSearch(selected.name);
+    } else {
+      submitSearch(searchQuery);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showDropdown || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightedIndex((i) => (i + 1) % suggestions.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((i) => (i - 1 + suggestions.length) % suggestions.length);
+    } else if (e.key === "Escape") {
+      setDropdownFocused(false);
     }
   };
 
@@ -50,14 +122,53 @@ const Header = () => {
           {/* Desktop: search + nav */}
           <div className="hidden md:flex flex-1 items-center justify-center gap-1 max-w-xl mx-6">
             <form onSubmit={handleSearch} className="w-full max-w-sm">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <div ref={searchRef} className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   placeholder="Search services..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setDropdownFocused(true)}
+                  onKeyDown={handleKeyDown}
                   className="h-9 w-full rounded-full border-primary/20 bg-white/50 pl-9 pr-4 text-sm placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary/20"
+                  autoComplete="off"
                 />
+                <AnimatePresence>
+                  {showDropdown && (
+                    <motion.ul
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 right-0 mt-1 py-1 rounded-lg border border-primary/20 bg-white shadow-lg z-50 max-h-56 overflow-auto"
+                      role="listbox"
+                    >
+                      {suggestions.length > 0 ? (
+                        suggestions.map((s: { id: string; name: string }, i: number) => (
+                          <li
+                            key={s.id}
+                            role="option"
+                            aria-selected={i === highlightedIndex}
+                            onMouseEnter={() => setHighlightedIndex(i)}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              submitSearch(s.name);
+                            }}
+                            className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                              i === highlightedIndex ? "bg-primary/15 text-primary" : "text-foreground hover:bg-primary/10"
+                            }`}
+                          >
+                            {s.name}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="px-3 py-2 text-sm text-muted-foreground">
+                          No matching services
+                        </li>
+                      )}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
               </div>
             </form>
           </div>
@@ -121,14 +232,53 @@ const Header = () => {
           >
             <div className="px-4 py-4 space-y-3">
               <form onSubmit={handleSearch}>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div ref={mobileSearchRef} className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                   <Input
                     placeholder="Search services..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setDropdownFocused(true)}
+                    onKeyDown={handleKeyDown}
                     className="h-10 rounded-full pl-9 bg-white/50 border border-primary/10"
+                    autoComplete="off"
                   />
+                  <AnimatePresence>
+                    {showDropdown && (
+                      <motion.ul
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-full left-0 right-0 mt-1 py-1 rounded-lg border border-primary/20 bg-white shadow-lg z-50 max-h-56 overflow-auto"
+                        role="listbox"
+                      >
+                        {suggestions.length > 0 ? (
+                          suggestions.map((s: { id: string; name: string }, i: number) => (
+                            <li
+                              key={s.id}
+                              role="option"
+                              aria-selected={i === highlightedIndex}
+                              onMouseEnter={() => setHighlightedIndex(i)}
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                submitSearch(s.name);
+                              }}
+                              className={`px-3 py-2 text-sm cursor-pointer transition-colors ${
+                                i === highlightedIndex ? "bg-primary/15 text-primary" : "text-foreground hover:bg-primary/10"
+                              }`}
+                            >
+                              {s.name}
+                            </li>
+                          ))
+                        ) : (
+                          <li className="px-3 py-2 text-sm text-muted-foreground">
+                            No matching services
+                          </li>
+                        )}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </div>
               </form>
               <div className="flex flex-col gap-0.5 pt-2">
