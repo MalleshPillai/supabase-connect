@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePricing, calculateTotal } from "@/hooks/usePricing";
@@ -13,7 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileText, Settings, User, Receipt, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Upload, FileText, Settings, User, Receipt, CheckCircle, ArrowLeft, ArrowRight, Loader2, LogIn } from "lucide-react";
+
+const ORDER_DRAFT_KEY = "psh_order_draft_v1";
+const MAX_DRAFT_FILE_BYTES = 4 * 1024 * 1024;
 
 interface OrderData {
   file: File | null;
@@ -50,7 +53,7 @@ const pageColors = ["White", "Light Blue", "Light Yellow", "Light Green", "Light
 const OrderPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, signIn, signInWithGoogle } = useAuth();
   const { data: pricing, isLoading: pricingLoading } = usePricing();
   const [step, setStep] = useState(1);
   const [order, setOrder] = useState<OrderData>(defaultOrderData);
@@ -58,23 +61,115 @@ const OrderPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [serviceName, setServiceName] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const isSpiral = slug === "spiral-binding";
-  const totalSteps = isSpiral ? 6 : 5;
+  /** Spiral: 1–5 flow, 6 sign-in, 7 success. Non-spiral: 1–4 flow, 5 sign-in, 6 success. */
+  const loginStep = isSpiral ? 6 : 5;
+  const totalSteps = isSpiral ? 7 : 6;
 
   useEffect(() => {
-    // Fetch service name
     supabase.from("services").select("name").eq("slug", slug).single().then(({ data }) => {
       if (data) setServiceName(data.name);
     });
   }, [slug]);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      toast({ title: "Please login to place an order", variant: "destructive" });
-      navigate("/auth");
+  const persistOrderDraft = useCallback(async () => {
+    if (!slug) return;
+    const { file, ...rest } = order;
+    let fileDataUrl: string | null = null;
+    if (file && file.size <= MAX_DRAFT_FILE_BYTES) {
+      fileDataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result as string);
+        r.onerror = () => reject(new Error("read failed"));
+        r.readAsDataURL(file);
+      });
+    } else if (file && file.size > MAX_DRAFT_FILE_BYTES) {
+      toast({
+        title: "Large file",
+        description: "After Google sign-in, you may need to re-upload your file if the draft cannot be restored.",
+      });
     }
-  }, [user, authLoading, navigate]);
+    sessionStorage.setItem(
+      ORDER_DRAFT_KEY,
+      JSON.stringify({
+        v: 1,
+        slug,
+        targetStep: loginStep,
+        order: { ...rest, fileDataUrl, fileName: order.fileName, hadFile: !!file },
+      })
+    );
+  }, [slug, order, loginStep]);
+
+  useEffect(() => {
+    if (!slug) return;
+    const raw = sessionStorage.getItem(ORDER_DRAFT_KEY);
+    if (!raw) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const d = JSON.parse(raw);
+        if (d.v !== 1 || d.slug !== slug) return;
+        const o = d.order;
+        let file: File | null = null;
+        if (o.fileDataUrl && o.fileName) {
+          const blob = await (await fetch(o.fileDataUrl)).blob();
+          file = new File([blob], o.fileName, { type: blob.type || "application/pdf" });
+        } else if (o.hadFile) {
+          toast({ title: "Please upload your file again", description: "Then continue to place your order.", variant: "destructive" });
+          if (!cancelled) {
+            setStep(1);
+            setOrder((prev) => ({
+              ...defaultOrderData,
+              fullName: o.fullName || "",
+              phone: o.phone || "",
+              email: o.email || "",
+              deliveryAddress: o.deliveryAddress || "",
+              preferredTiming: o.preferredTiming || "",
+            }));
+          }
+          sessionStorage.removeItem(ORDER_DRAFT_KEY);
+          return;
+        }
+        if (cancelled) return;
+        const nextOrder = {
+          file,
+          fileName: o.fileName || "",
+          fileUrl: "",
+          printAllPages: o.printAllPages ?? true,
+          pageRange: o.pageRange || "",
+          numPages: o.numPages ?? 1,
+          numCopies: o.numCopies ?? 1,
+          colorMode: o.colorMode || "bw",
+          firstPageColor: !!o.firstPageColor,
+          firstPagePhotoSheet: !!o.firstPagePhotoSheet,
+          glassWhiteSheet: !!o.glassWhiteSheet,
+          spiralColor: o.spiralColor || "black",
+          pageColor: o.pageColor || "white",
+          fullName: o.fullName || "",
+          phone: o.phone || "",
+          email: o.email || "",
+          deliveryAddress: o.deliveryAddress || "",
+          preferredTiming: o.preferredTiming || "",
+        };
+        if (cancelled) return;
+        setOrder(nextOrder);
+        if (cancelled) return;
+        setStep(d.targetStep ?? loginStep);
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
+        toast({ title: "You're signed in", description: "Review and place your order below." });
+      } catch {
+        sessionStorage.removeItem(ORDER_DRAFT_KEY);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, loginStep]);
 
   const update = (fields: Partial<OrderData>) => setOrder((prev) => ({ ...prev, ...fields }));
 
@@ -155,7 +250,6 @@ const OrderPage = () => {
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   const getStepContent = () => {
-    // Map steps based on whether it's spiral binding
     if (isSpiral) {
       switch (step) {
         case 1: return renderFileUpload();
@@ -163,7 +257,8 @@ const OrderPage = () => {
         case 3: return renderSpiralOptions();
         case 4: return renderUserDetails();
         case 5: return renderBillSummary();
-        case 6: return renderConfirmation();
+        case 6: return renderLoginToPlaceOrder();
+        case 7: return renderConfirmation();
       }
     } else {
       switch (step) {
@@ -171,13 +266,45 @@ const OrderPage = () => {
         case 2: return renderPrintOptions();
         case 3: return renderUserDetails();
         case 4: return renderBillSummary();
-        case 5: return renderConfirmation();
+        case 5: return renderLoginToPlaceOrder();
+        case 6: return renderConfirmation();
       }
     }
   };
 
-  const isLastStepBeforeConfirm = isSpiral ? step === 5 : step === 4;
-  const isConfirmStep = isSpiral ? step === 6 : step === 5;
+  const isBillSummaryStep = isSpiral ? step === 5 : step === 4;
+  const isLoginStep = step === loginStep;
+  const isSuccessStep = isSpiral ? step === 7 : step === 6;
+
+  const handleGoogleContinue = async () => {
+    setGoogleLoading(true);
+    try {
+      await persistOrderDraft();
+      await signInWithGoogle(`/order/${slug}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Could not start Google sign-in";
+      toast({ title: "Google sign-in failed", description: message, variant: "destructive" });
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleInlineLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail.trim() || !loginPassword) {
+      toast({ title: "Enter email and password", variant: "destructive" });
+      return;
+    }
+    setLoginLoading(true);
+    try {
+      await signIn(loginEmail, loginPassword);
+      toast({ title: "Signed in", description: "Place your order when you're ready." });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Sign in failed";
+      toast({ title: "Sign in failed", description: message, variant: "destructive" });
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   const handleConfirmOrder = async () => {
     if (!user) return;
@@ -218,6 +345,7 @@ const OrderPage = () => {
       });
 
       if (error) throw error;
+      sessionStorage.removeItem(ORDER_DRAFT_KEY);
       setOrderNumber(num);
       setStep(totalSteps);
       toast({ title: "Order placed successfully!" });
@@ -405,9 +533,122 @@ const OrderPage = () => {
         </div>
       </div>
 
-      <Button onClick={handleConfirmOrder} className="w-full min-h-[48px] touch-manipulation" size="lg" disabled={submitting}>
-        {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</> : "Confirm Order"}
+      <Button onClick={nextStep} className="w-full min-h-[48px] touch-manipulation" size="lg">
+        Continue to sign in
       </Button>
+      <p className="text-center text-xs text-muted-foreground">
+        Sign in is required only to confirm and place your order.
+      </p>
+    </div>
+  );
+
+  const renderLoginToPlaceOrder = () => (
+    <div className="space-y-6">
+      <div className="text-center mb-2">
+        <LogIn className="w-12 h-12 text-primary mx-auto mb-3" />
+        <h3 className="text-xl font-semibold text-foreground">Sign in to place order</h3>
+        <p className="text-sm text-muted-foreground mt-2">Use Google or your account to confirm.</p>
+      </div>
+
+      {user ? (
+        <div className="space-y-4">
+          <p className="text-sm text-center text-muted-foreground">
+            Signed in as <span className="font-medium text-foreground">{user.email}</span>
+          </p>
+          <Button
+            onClick={handleConfirmOrder}
+            className="w-full min-h-[48px] touch-manipulation"
+            size="lg"
+            disabled={submitting}
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Placing order...
+              </>
+            ) : (
+              "Place order"
+            )}
+          </Button>
+        </div>
+      ) : (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full min-h-[48px] touch-manipulation gap-2 border-primary/30"
+            onClick={handleGoogleContinue}
+            disabled={googleLoading}
+          >
+            {googleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+            )}
+            Continue with Google
+          </Button>
+
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or email</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleInlineLogin} className="space-y-3">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
+              autoComplete="email"
+              maxLength={255}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+            <Button type="submit" className="w-full min-h-[48px]" disabled={loginLoading}>
+              {loginLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign in"}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground">
+            New here?{" "}
+            <button
+              type="button"
+              onClick={async () => {
+                await persistOrderDraft();
+                navigate(`/auth?next=${encodeURIComponent(`/order/${slug ?? ""}`)}&mode=signup`);
+              }}
+              className="text-primary font-medium hover:underline"
+            >
+              Create an account
+            </button>
+          </p>
+        </>
+      )}
     </div>
   );
 
@@ -443,10 +684,10 @@ const OrderPage = () => {
   );
 
   const stepLabels = isSpiral
-    ? ["Upload", "Print Options", "Spiral", "Details", "Summary", "Done"]
-    : ["Upload", "Print Options", "Details", "Summary", "Done"];
+    ? ["Upload", "Print", "Spiral", "Details", "Summary", "Sign in", "Done"]
+    : ["Upload", "Print", "Details", "Summary", "Sign in", "Done"];
 
-  if (authLoading || pricingLoading) {
+  if (pricingLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -500,12 +741,17 @@ const OrderPage = () => {
               </AnimatePresence>
 
               {/* Navigation */}
-              {!isConfirmStep && (
+              {!isSuccessStep && (
                 <div className="flex justify-between gap-3 mt-6 sm:mt-8 pt-4 border-t">
-                  <Button variant="outline" onClick={prevStep} disabled={step === 1} className="min-h-[44px] touch-manipulation shrink-0">
+                  <Button
+                    variant="outline"
+                    onClick={prevStep}
+                    disabled={step === 1}
+                    className="min-h-[44px] touch-manipulation shrink-0"
+                  >
                     <ArrowLeft className="w-4 h-4 mr-1" /> Back
                   </Button>
-                  {!isLastStepBeforeConfirm && (
+                  {!isBillSummaryStep && !isLoginStep && (
                     <Button onClick={nextStep} className="min-h-[44px] touch-manipulation shrink-0">
                       Next <ArrowRight className="w-4 h-4 ml-1" />
                     </Button>
