@@ -160,34 +160,40 @@ export type Database = {
       }
       services: {
         Row: {
+          category: string | null
           created_at: string | null
           description: string | null
+          display_order: number | null
           icon: string | null
           id: string
-          is_active: boolean | null
           name: string
+          price: number | null
           slug: string
-          sort_order: number | null
+          status: boolean | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           icon?: string | null
           id?: string
-          is_active?: boolean | null
           name: string
+          price?: number | null
           slug: string
-          sort_order?: number | null
+          status?: boolean | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
           icon?: string | null
           id?: string
-          is_active?: boolean | null
           name?: string
+          price?: number | null
           slug?: string
-          sort_order?: number | null
+          status?: boolean | null
         }
         Relationships: []
       }

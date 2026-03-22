@@ -3,29 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import {
-  FileText,
-  Printer,
-  Copy,
-  BookOpen,
-  Book,
-  Disc,
-  GraduationCap,
-  School,
-  ArrowUpRight,
-} from "lucide-react";
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  FileText,
-  Printer,
-  Copy,
-  BookOpen,
-  Book,
-  Disc,
-  GraduationCap,
-  School,
-};
+import { FileText, ArrowUpRight } from "lucide-react";
+import { SERVICE_LUCIDE_ICONS, isIconImageUrl } from "@/lib/serviceIcons";
 
 interface ServicesSectionProps {
   searchQuery?: string;
@@ -38,8 +19,8 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
       const { data, error } = await supabase
         .from("services")
         .select("*")
-        .eq("is_active", true)
-        .order("sort_order");
+        .eq("status", true)
+        .order("display_order", { ascending: true });
       if (error) throw error;
       return data;
     },
@@ -63,6 +44,8 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
     hidden: { opacity: 0, y: 16 },
     show: { opacity: 1, y: 0 },
   };
+
+  const showEmpty = !isLoading && (!filtered || filtered.length === 0);
 
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
@@ -88,11 +71,18 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="rounded-2xl overflow-hidden animate-pulse h-44 border border-primary/10 bg-gradient-to-br from-white/80 to-primary/10 shadow-lg">
-                <CardContent className="p-6" />
+              <Card key={i} className="rounded-2xl overflow-hidden border border-primary/10 bg-gradient-to-br from-white/80 to-primary/10 shadow-lg">
+                <CardContent className="p-6 sm:p-8 space-y-4">
+                  <Skeleton className="h-14 w-14 rounded-2xl" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </CardContent>
               </Card>
             ))}
           </div>
+        ) : showEmpty ? (
+          <p className="text-center text-muted-foreground py-16 text-lg">No services available</p>
         ) : (
           <motion.div
             variants={container}
@@ -101,38 +91,50 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
             viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {filtered?.map((service: { id: string; icon?: string; name?: string; description?: string; slug?: string }, i: number) => {
-              const Icon = (iconMap[service.icon ?? ""] || FileText) as React.ComponentType<{ className?: string }>;
-              const isFeatured = i === 0;
-              return (
-                <motion.div key={service.id} variants={item}>
-                  <Link to={`/order/${service.slug ?? ""}`}>
-                    <Card
-                      className={`group relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-white/90 to-primary/10 shadow-md shadow-primary/5 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1 ${
-                        isFeatured ? "sm:col-span-2 lg:col-span-1" : ""
-                      }`}
-                    >
-                      <CardContent className="p-6 sm:p-8 flex flex-col h-full min-h-[160px]">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20">
-                            <Icon className="h-7 w-7" />
+            {filtered?.map(
+              (service: { id: string; icon?: string | null; name?: string; description?: string | null; slug?: string }) => {
+                const url = service.icon && isIconImageUrl(service.icon) ? service.icon : null;
+                const LucideIcon =
+                  !url && service.icon && SERVICE_LUCIDE_ICONS[service.icon]
+                    ? SERVICE_LUCIDE_ICONS[service.icon]
+                    : FileText;
+
+                return (
+                  <motion.div
+                    key={service.id}
+                    variants={item}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className="h-full"
+                  >
+                    <Link to={`/order/${service.slug ?? ""}`} className="block h-full">
+                      <Card className="group relative h-full overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-white/90 to-primary/10 shadow-md shadow-primary/5 transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/15 hover:border-primary/30">
+                        <CardContent className="p-6 sm:p-8 flex flex-col h-full min-h-[160px]">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20 overflow-hidden">
+                              {url ? (
+                                <img src={url} alt="" className="h-full w-full object-contain p-1" />
+                              ) : (
+                                <LucideIcon className="h-7 w-7" />
+                              )}
+                            </div>
+                            <span className="rounded-full p-1.5 text-muted-foreground/70 group-hover:text-primary transition-colors">
+                              <ArrowUpRight className="h-5 w-5" />
+                            </span>
                           </div>
-                          <span className="rounded-full p-1.5 text-muted-foreground/70 group-hover:text-primary transition-colors">
-                            <ArrowUpRight className="h-5 w-5" />
-                          </span>
-                        </div>
-                        <h3 className="mt-4 text-lg font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
-                          {service.name}
-                        </h3>
-                        <p className="mt-2 text-sm text-muted-foreground line-clamp-2 flex-1">
-                          {service.description}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                </motion.div>
-              );
-            })}
+                          <h3 className="mt-4 text-lg font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">
+                            {service.name}
+                          </h3>
+                          {service.description ? (
+                            <p className="mt-2 text-sm text-muted-foreground line-clamp-2 flex-1">{service.description}</p>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                );
+              }
+            )}
           </motion.div>
         )}
       </div>

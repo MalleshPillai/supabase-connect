@@ -25,7 +25,10 @@ import {
   Clock,
   CheckCircle,
   Package,
+  PlusCircle,
+  ClipboardList,
 } from "lucide-react";
+import { AdminServicesPanel } from "@/components/admin/AdminServicesPanel";
 import { motion, AnimatePresence } from "framer-motion";
 
 const statusOptions = ["pending", "printing", "ready", "delivered"];
@@ -36,7 +39,7 @@ const statusColors: Record<string, string> = {
   delivered: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 };
 
-type AdminView = "dashboard" | "orders" | "pricing";
+type AdminView = "dashboard" | "orders" | "pricing" | "services-create" | "services-manage";
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -131,6 +134,11 @@ const Admin = () => {
     { id: "pricing", label: "Pricing", icon: IndianRupee },
   ];
 
+  const servicesNav: { id: AdminView; label: string; icon: React.ElementType }[] = [
+    { id: "services-create", label: "Create Service", icon: PlusCircle },
+    { id: "services-manage", label: "Manage Services", icon: ClipboardList },
+  ];
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10">
@@ -174,6 +182,27 @@ const Admin = () => {
                 </button>
               );
             })}
+            <div className="pt-3 mt-2 border-t border-white/10">
+              <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/45">Services</p>
+              {servicesNav.map((item) => {
+                const Icon = item.icon;
+                const active = view === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setView(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      active
+                        ? "bg-white/20 text-white shadow-lg"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
           </nav>
         </aside>
 
@@ -230,6 +259,23 @@ const Admin = () => {
                       </button>
                     );
                   })}
+                  <div className="pt-3 mt-2 border-t border-white/10">
+                    <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/45">Services</p>
+                    {servicesNav.map((item) => {
+                      const Icon = item.icon;
+                      const active = view === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => { setView(item.id); setSidebarOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium ${active ? "bg-white/20" : "text-white/80 hover:bg-white/10"}`}
+                        >
+                          <Icon className="h-5 w-5" />
+                          {item.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </nav>
               </motion.aside>
             </>
@@ -483,6 +529,32 @@ const Admin = () => {
                       )}
                     </CardContent>
                   </Card>
+                </motion.div>
+              )}
+
+              {view === "services-create" && (
+                <motion.div
+                  key="services-create"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Create Service</h1>
+                  <AdminServicesPanel mode="create" />
+                </motion.div>
+              )}
+
+              {view === "services-manage" && (
+                <motion.div
+                  key="services-manage"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Services</h1>
+                  <AdminServicesPanel mode="manage" />
                 </motion.div>
               )}
             </AnimatePresence>

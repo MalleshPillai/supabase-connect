@@ -61,6 +61,7 @@ const OrderPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [serviceName, setServiceName] = useState("");
+  const [serviceLoadState, setServiceLoadState] = useState<"loading" | "ok" | "missing">("loading");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -72,9 +73,27 @@ const OrderPage = () => {
   const totalSteps = isSpiral ? 7 : 6;
 
   useEffect(() => {
-    supabase.from("services").select("name").eq("slug", slug).single().then(({ data }) => {
-      if (data) setServiceName(data.name);
-    });
+    if (!slug) {
+      setServiceLoadState("missing");
+      setServiceName("");
+      return;
+    }
+    setServiceLoadState("loading");
+    supabase
+      .from("services")
+      .select("name")
+      .eq("slug", slug)
+      .eq("status", true)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error || !data?.name) {
+          setServiceName("");
+          setServiceLoadState("missing");
+        } else {
+          setServiceName(data.name);
+          setServiceLoadState("ok");
+        }
+      });
   }, [slug]);
 
   const persistOrderDraft = useCallback(async () => {
@@ -687,12 +706,34 @@ const OrderPage = () => {
     ? ["Upload", "Print", "Spiral", "Details", "Summary", "Sign in", "Done"]
     : ["Upload", "Print", "Details", "Summary", "Sign in", "Done"];
 
-  if (pricingLoading) {
+  if (pricingLoading || serviceLoadState === "loading") {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (serviceLoadState === "missing") {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <Card className="max-w-md w-full border-primary/15 shadow-lg">
+            <CardContent className="p-8 text-center space-y-4">
+              <p className="text-lg font-semibold text-foreground">Service not available</p>
+              <p className="text-sm text-muted-foreground">
+                This service is inactive or does not exist. Try another option from our homepage.
+              </p>
+              <Button onClick={() => navigate("/")} className="min-h-[48px]">
+                Back to home
+              </Button>
+            </CardContent>
+          </Card>
         </main>
         <Footer />
       </div>

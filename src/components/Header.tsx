@@ -26,8 +26,8 @@ const Header = () => {
       const { data, error } = await supabase
         .from("services")
         .select("id, name, slug")
-        .eq("is_active", true)
-        .order("sort_order");
+        .eq("status", true)
+        .order("display_order", { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
