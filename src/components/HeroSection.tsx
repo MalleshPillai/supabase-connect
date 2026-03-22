@@ -88,12 +88,13 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.12] mb-6 drop-shadow-sm"
+            className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.12] mb-6 drop-shadow-sm text-balance"
           >
-            Your paper projects—{" "}
+            We{" "}
             <span className="bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent drop-shadow-sm">
-              done.
-            </span>
+              finish
+            </span>{" "}
+            what your project starts.
           </motion.h1>
 
           <motion.p
@@ -102,7 +103,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="text-lg sm:text-xl text-white/90 max-w-xl leading-relaxed mb-10 drop-shadow-sm"
           >
-            From quick xerox to premium binding — we finish what you start. Quality printing for students, professionals, and businesses. Fast, reliable, hassle-free.
+            From quick xerox to premium binding — quality printing for students, professionals, and businesses. Fast, reliable, hassle-free.
           </motion.p>
 
           <motion.div
