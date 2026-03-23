@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -12,18 +13,32 @@ const ContactUs = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
       toast({ title: "Please fill all fields", variant: "destructive" });
       return;
     }
     setSending(true);
-    setTimeout(() => {
+    try {
+      const supabaseAny = supabase as any;
+      const { error } = await supabaseAny.from("inquiries").insert({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: null,
+        message: form.message.trim(),
+        source: "contact-us",
+      });
+
+      if (error) throw error;
+
       toast({ title: "Message sent!", description: "We'll get back to you soon." });
       setForm({ name: "", email: "", message: "" });
+    } catch (err: any) {
+      toast({ title: "Error sending message", description: err?.message ?? "Please try again.", variant: "destructive" });
+    } finally {
       setSending(false);
-    }, 1000);
+    }
   };
 
   return (

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Mail, MessageCircle, Phone, Sparkles, Wand2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -80,33 +81,26 @@ const GraphicDesign = () => {
   const posters: Poster[] = useMemo(
     () => [
       {
-        title: "Porsche Campaign Poster",
-        category: "Automotive",
-        description: "Luxury campaign poster with bold contrast and premium typography.",
-        // Use SVGs that exist in /public/designs/. (If you later add .webp versions, we can switch back.)
-        imageWebp: "/designs/porsche-poster.svg",
-        imageFallbackSvg: "/designs/porsche-poster.svg",
+        // Note: We load the JPEGs if present; otherwise we fall back to the existing SVGs.
+        title: "Ad Campaign Poster",
+        category: "Event",
+        description: "Premium ad-ready poster layouts designed for maximum visibility.",
+        imageWebp: "/designs/Add%20poster.jpeg",
+        imageFallbackSvg: "/placeholder.svg",
       },
       {
         title: "Pongal Festival Poster",
         category: "Festival",
         description: "Vibrant festival artwork designed to stand out on streets and feeds.",
-        imageWebp: "/designs/pongal-poster.svg",
-        imageFallbackSvg: "/designs/pongal-poster.svg",
+        imageWebp: "/designs/pongal%20poster.jpeg",
+        imageFallbackSvg: "/placeholder.svg",
       },
       {
-        title: "Event Promotion Poster",
-        category: "Event",
-        description: "High-clarity event poster layouts for maximum visibility.",
-        imageWebp: "/designs/event-poster.svg",
-        imageFallbackSvg: "/designs/event-poster.svg",
-      },
-      {
-        title: "Social Media Creative",
-        category: "Social Media",
-        description: "Scroll-stopping creatives tailored for Instagram and other platforms.",
-        imageWebp: "/designs/social-media-poster.svg",
-        imageFallbackSvg: "/designs/social-media-poster.svg",
+        title: "Porsche Campaign Poster",
+        category: "Automotive",
+        description: "Luxury campaign poster with bold contrast and premium typography.",
+        imageWebp: "/designs/Porche%20poster.jpeg",
+        imageFallbackSvg: "/placeholder.svg",
       },
     ],
     []
@@ -161,18 +155,31 @@ const GraphicDesign = () => {
     flyer: Phone,
   } satisfies Record<string, LucideIcon>;
 
-  const onSubmitContact = (e: React.FormEvent) => {
+  const onSubmitContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contact.name.trim() || !contact.phone.trim() || !contact.message.trim()) {
       toast({ title: "Please fill all contact fields", variant: "destructive" });
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
+    try {
+      const supabaseAny = supabase as any;
+      const { error } = await supabaseAny.from("inquiries").insert({
+        name: contact.name.trim(),
+        phone: contact.phone.trim(),
+        email: null,
+        message: contact.message.trim(),
+        source: "graphic-design",
+      });
+      if (error) throw error;
+
       toast({ title: "Request sent!", description: "We’ll contact you shortly." });
       setContact({ name: "", phone: "", message: "" });
+    } catch (err: any) {
+      toast({ title: "Error sending request", description: err?.message ?? "Please try again.", variant: "destructive" });
+    } finally {
       setSubmitting(false);
-    }, 900);
+    }
   };
 
   return (

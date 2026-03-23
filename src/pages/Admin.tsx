@@ -19,6 +19,7 @@ import {
   LayoutDashboard,
   ShoppingBag,
   IndianRupee,
+  MessageCircle,
   Menu,
   X,
   TrendingUp,
@@ -39,7 +40,7 @@ const statusColors: Record<string, string> = {
   delivered: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 };
 
-type AdminView = "dashboard" | "orders" | "pricing" | "services-create" | "services-manage";
+type AdminView = "dashboard" | "orders" | "pricing" | "enquiries" | "services-create" | "services-manage";
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -71,6 +72,20 @@ const Admin = () => {
       const { data, error } = await supabase.from("pricing").select("*").order("key");
       if (error) throw error;
       return data;
+    },
+    enabled: isAdmin,
+  });
+
+  const { data: enquiries, isLoading: enquiriesLoading } = useQuery({
+    queryKey: ["admin-enquiries"],
+    queryFn: async () => {
+      const supabaseAny = supabase as any;
+      const { data, error } = await supabaseAny
+        .from("inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: isAdmin,
   });
@@ -132,6 +147,7 @@ const Admin = () => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "orders", label: "Orders", icon: ShoppingBag },
     { id: "pricing", label: "Pricing", icon: IndianRupee },
+    { id: "enquiries", label: "Enquiries", icon: MessageCircle },
   ];
 
   const servicesNav: { id: AdminView; label: string; icon: React.ElementType }[] = [
@@ -479,6 +495,57 @@ const Admin = () => {
                                       <Trash2 className="w-4 h-4" />
                                     </Button>
                                   </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {view === "enquiries" && (
+                <motion.div
+                  key="enquiries"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Enquiries</h1>
+                  <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
+                    <CardContent className="p-0">
+                      {enquiriesLoading ? (
+                        <div className="p-8 text-center">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
+                        </div>
+                      ) : !enquiries?.length ? (
+                        <div className="p-8 text-center text-muted-foreground">No enquiries yet.</div>
+                      ) : (
+                        <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0" style={{ WebkitOverflowScrolling: "touch" }}>
+                          <Table className="min-w-[900px]">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Phone</TableHead>
+                                <TableHead>Message</TableHead>
+                                <TableHead>Source</TableHead>
+                                <TableHead>Date</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {enquiries.map((inq: any) => (
+                                <TableRow key={inq.id}>
+                                  <TableCell className="font-medium">{inq.name}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">{inq.email ?? "—"}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">{inq.phone ?? "—"}</TableCell>
+                                  <TableCell className="text-sm">
+                                    <div className="max-w-[420px] whitespace-pre-wrap">{inq.message}</div>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">{inq.source}</TableCell>
+                                  <TableCell className="text-xs text-muted-foreground">{new Date(inq.created_at).toLocaleDateString()}</TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
