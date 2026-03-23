@@ -432,6 +432,19 @@ const OrderPage = () => {
             toast({ title: "Please complete required fields", description: "Check the highlighted custom inputs.", variant: "destructive" });
             return false;
           }
+          // Print options are also visible alongside custom fields.
+          if (order.numPages < 1) {
+            toast({ title: "Enter valid number of pages", variant: "destructive" });
+            return false;
+          }
+          if (order.numCopies < 1) {
+            toast({ title: "Enter valid number of copies", variant: "destructive" });
+            return false;
+          }
+          if (!order.printAllPages && !order.pageRange.trim()) {
+            toast({ title: "Enter page range", variant: "destructive" });
+            return false;
+          }
           return true;
         }
 
@@ -699,13 +712,8 @@ const OrderPage = () => {
         onChangeFile={handleCustomFileChange}
       />
 
-      {pricing && (
-        <div className="bg-accent/50 rounded-lg p-4 text-sm">
-          <p className="font-medium text-foreground">
-            Live Estimate: <span className="text-primary">₹{prices.total.toFixed(2)}</span>
-          </p>
-        </div>
-      )}
+      {/* Print Options should stay available even when the service has custom fields */}
+      {renderPrintOptions()}
     </div>
   );
 
@@ -722,7 +730,10 @@ const OrderPage = () => {
           <label className="text-sm font-medium text-foreground">Print All Pages</label>
         </div>
         {!order.printAllPages && (
-          <Input placeholder="Page range (e.g., 1-10, 15, 20-30)" value={order.pageRange} onChange={(e) => update({ pageRange: e.target.value })} />
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-foreground block">Custom Page Range</label>
+            <Input placeholder="e.g. 6-20" value={order.pageRange} onChange={(e) => update({ pageRange: e.target.value })} />
+          </div>
         )}
 
         <div className="grid grid-cols-2 gap-4">
@@ -788,6 +799,7 @@ const OrderPage = () => {
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground mt-1">Select the spiral color for your binding.</p>
       </div>
 
       <div>

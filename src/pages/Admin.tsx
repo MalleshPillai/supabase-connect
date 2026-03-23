@@ -121,6 +121,16 @@ const Admin = () => {
     }
   };
 
+  const deleteInquiry = async (inquiryId: string) => {
+    if (!confirm("Delete this enquiry?")) return;
+    const { error } = await supabase.from("inquiries").delete().eq("id", inquiryId);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "Enquiry deleted" });
+      queryClient.invalidateQueries({ queryKey: ["admin-enquiries"] });
+    }
+  };
+
   const savePricing = async (id: string) => {
     const { error } = await supabase.from("pricing").update({ value: pricingEdits[id], updated_at: new Date().toISOString() }).eq("id", id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -533,6 +543,7 @@ const Admin = () => {
                                 <TableHead>Message</TableHead>
                                 <TableHead>Source</TableHead>
                                 <TableHead>Date</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -546,6 +557,16 @@ const Admin = () => {
                                   </TableCell>
                                   <TableCell className="text-sm text-muted-foreground">{inq.source}</TableCell>
                                   <TableCell className="text-xs text-muted-foreground">{new Date(inq.created_at).toLocaleDateString()}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive"
+                                  onClick={() => deleteInquiry(inq.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
