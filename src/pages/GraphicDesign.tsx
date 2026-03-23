@@ -491,6 +491,30 @@ const GraphicDesign = () => {
             </div>
           </div>
         </section>
+
+        {/* Bottom Callout */}
+        <section className="py-12 sm:py-14">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="rounded-3xl border border-primary/10 bg-gradient-to-r from-purple-900/20 via-primary/10 to-orange-500/20 p-6 sm:p-10 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className="max-w-2xl">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground">We offer graphic design too.</h2>
+                  <p className="mt-3 text-muted-foreground leading-relaxed">
+                    Posters, creative layouts, and branding that help your message stand out.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={() => scrollToId("contact")}
+                    className="bg-primary hover:opacity-95 touch-manipulation"
+                  >
+                    Request a Design
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </motion.main>
 
       <Footer />
