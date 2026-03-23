@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,6 +48,26 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
 
   const showEmpty = !isLoading && (!filtered || filtered.length === 0);
 
+  const ServiceIcon = ({ icon }: { icon: string | null | undefined }) => {
+    const url = icon && isIconImageUrl(icon) ? icon : null;
+    const [broken, setBroken] = useState(false);
+    if (url && !broken) {
+      return (
+        <img
+          src={url}
+          alt=""
+          className="h-full w-full object-contain p-1"
+          onError={() => setBroken(true)}
+        />
+      );
+    }
+
+    const LucideIcon =
+      icon && SERVICE_LUCIDE_ICONS[icon] ? SERVICE_LUCIDE_ICONS[icon] : FileText;
+
+    return <LucideIcon className="h-7 w-7" />;
+  };
+
   return (
     <section id="services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,12 +114,6 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
           >
             {filtered?.map(
               (service: { id: string; icon?: string | null; name?: string; description?: string | null; slug?: string }) => {
-                const url = service.icon && isIconImageUrl(service.icon) ? service.icon : null;
-                const LucideIcon =
-                  !url && service.icon && SERVICE_LUCIDE_ICONS[service.icon]
-                    ? SERVICE_LUCIDE_ICONS[service.icon]
-                    : FileText;
-
                 return (
                   <motion.div
                     key={service.id}
@@ -112,11 +127,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
                         <CardContent className="p-6 sm:p-8 flex flex-col h-full min-h-[160px]">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-300 group-hover:bg-primary/20 overflow-hidden">
-                              {url ? (
-                                <img src={url} alt="" className="h-full w-full object-contain p-1" />
-                              ) : (
-                                <LucideIcon className="h-7 w-7" />
-                              )}
+                              <ServiceIcon icon={service.icon} />
                             </div>
                             <span className="rounded-full p-1.5 text-muted-foreground/70 group-hover:text-primary transition-colors">
                               <ArrowUpRight className="h-5 w-5" />
