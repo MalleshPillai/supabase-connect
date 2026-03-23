@@ -82,25 +82,25 @@ const GraphicDesign = () => {
     () => [
       {
         // Note: We load the JPEGs if present; otherwise we fall back to the existing SVGs.
-        title: "Ad Campaign Poster",
-        category: "Event",
+        title: "Add Poster",
+        category: "Social Media",
         description: "Premium ad-ready poster layouts designed for maximum visibility.",
         imageWebp: "/designs/Add%20poster.jpeg",
-        imageFallbackSvg: "/placeholder.svg",
+        imageFallbackSvg: "/designs/social-media-poster.svg",
       },
       {
-        title: "Pongal Festival Poster",
+        title: "Pongal Poster",
         category: "Festival",
         description: "Vibrant festival artwork designed to stand out on streets and feeds.",
-        imageWebp: "/designs/pongal%20poster.jpeg",
-        imageFallbackSvg: "/placeholder.svg",
+        imageWebp: "/designs/Pongal%20poster.jpeg",
+        imageFallbackSvg: "/designs/pongal-poster.svg",
       },
       {
-        title: "Porsche Campaign Poster",
+        title: "Porche Poster",
         category: "Automotive",
         description: "Luxury campaign poster with bold contrast and premium typography.",
         imageWebp: "/designs/Porche%20poster.jpeg",
-        imageFallbackSvg: "/placeholder.svg",
+        imageFallbackSvg: "/designs/porsche-poster.svg",
       },
     ],
     []
