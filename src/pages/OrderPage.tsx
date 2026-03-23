@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileText, Settings, User, Receipt, CheckCircle, ArrowLeft, ArrowRight, Loader2, LogIn } from "lucide-react";
+import { ServiceCustomFieldsForm } from "@/components/dynamic/ServiceCustomFieldsForm";
+import { normalizeCustomFields, type ServiceCustomField } from "@/lib/serviceCustomFields";
 
 const ORDER_DRAFT_KEY = "psh_order_draft_v1";
 const MAX_DRAFT_FILE_BYTES = 4 * 1024 * 1024;
@@ -62,6 +64,11 @@ const OrderPage = () => {
   const [orderNumber, setOrderNumber] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [serviceLoadState, setServiceLoadState] = useState<"loading" | "ok" | "missing">("loading");
+  const [serviceCustomFields, setServiceCustomFields] = useState<ServiceCustomField[]>([]);
+
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [customFieldFiles, setCustomFieldFiles] = useState<Record<string, File | null>>({});
+  const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -81,17 +88,22 @@ const OrderPage = () => {
     setServiceLoadState("loading");
     supabase
       .from("services")
-      .select("name")
+      .select("name, custom_fields")
       .eq("slug", slug)
       .eq("status", true)
       .maybeSingle()
       .then(({ data, error }) => {
         if (error || !data?.name) {
           setServiceName("");
+          setServiceCustomFields([]);
           setServiceLoadState("missing");
         } else {
           setServiceName(data.name);
+          setServiceCustomFields(normalizeCustomFields(data.custom_fields));
           setServiceLoadState("ok");
+          setCustomFieldValues({});
+          setCustomFieldFiles({});
+          setCustomFieldErrors({});
         }
       });
   }, [slug]);
@@ -113,6 +125,37 @@ const OrderPage = () => {
         description: "After Google sign-in, you may need to re-upload your file if the draft cannot be restored.",
       });
     }
+
+    const customFilesPayload: Record<
+      string,
+      { fileDataUrl: string | null; fileName: string | null; hadFile: boolean }
+    > = {};
+
+    for (const field of serviceCustomFields.filter((f) => f.type === "file")) {
+      const f = customFieldFiles[field.name] ?? null;
+      if (!f) {
+        customFilesPayload[field.name] = { fileDataUrl: null, fileName: null, hadFile: false };
+        continue;
+      }
+
+      let customFileDataUrl: string | null = null;
+      if (f.size <= MAX_DRAFT_FILE_BYTES) {
+        customFileDataUrl = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result as string);
+          r.onerror = () => reject(new Error("read failed"));
+          r.readAsDataURL(f);
+        });
+      } else {
+        toast({
+          title: "Large file",
+          description: "After Google sign-in, you may need to re-upload your custom upload if it cannot be restored.",
+        });
+      }
+
+      customFilesPayload[field.name] = { fileDataUrl: customFileDataUrl, fileName: f.name, hadFile: true };
+    }
+
     sessionStorage.setItem(
       ORDER_DRAFT_KEY,
       JSON.stringify({
@@ -120,9 +163,11 @@ const OrderPage = () => {
         slug,
         targetStep: loginStep,
         order: { ...rest, fileDataUrl, fileName: order.fileName, hadFile: !!file },
+        customFieldValues,
+        customFiles: customFilesPayload,
       })
     );
-  }, [slug, order, loginStep]);
+  }, [slug, order, loginStep, serviceCustomFields, customFieldFiles, customFieldValues]);
 
   useEffect(() => {
     if (!slug) return;
@@ -154,6 +199,37 @@ const OrderPage = () => {
           sessionStorage.removeItem(ORDER_DRAFT_KEY);
           return;
         }
+
+        const restoredCustomValues = d.customFieldValues ?? {};
+        setCustomFieldValues(restoredCustomValues);
+
+        const restoredCustomFiles = d.customFiles ?? {};
+        const nextCustomFiles: Record<string, File | null> = {};
+        for (const [key, cf] of Object.entries(restoredCustomFiles)) {
+          const fileDataUrl = (cf as any)?.fileDataUrl as string | null;
+          const fileName = (cf as any)?.fileName as string | null;
+          const hadFile = !!(cf as any)?.hadFile;
+
+          if (fileDataUrl && fileName) {
+            const blob = await (await fetch(fileDataUrl)).blob();
+            nextCustomFiles[key] = new File([blob], fileName, { type: blob.type || "application/octet-stream" });
+          } else if (hadFile) {
+            nextCustomFiles[key] = null;
+          } else {
+            nextCustomFiles[key] = null;
+          }
+        }
+
+        const hadMissingCustomFile = Object.values(restoredCustomFiles).some((x: any) => x?.hadFile && !x?.fileDataUrl);
+        if (hadMissingCustomFile) {
+          toast({ title: "Please upload your custom files again", description: "Then continue to place your order.", variant: "destructive" });
+          if (!cancelled) setStep(1);
+          sessionStorage.removeItem(ORDER_DRAFT_KEY);
+          return;
+        }
+
+        setCustomFieldFiles(nextCustomFiles);
+
         if (cancelled) return;
         const nextOrder = {
           file,
@@ -233,15 +309,144 @@ const OrderPage = () => {
       })
     : { subtotal: 0, bindingCharges: 0, specialCharges: 0, total: 0 };
 
+  const hasCustomFields = serviceCustomFields.length > 0;
+  const fileCustomFields = serviceCustomFields.filter((f) => f.type === "file");
+  const nonFileCustomFields = serviceCustomFields.filter((f) => f.type !== "file");
+  const shouldUseCustomFileFields = fileCustomFields.length > 0;
+
+  const normalizeColorMode = (input: string): string | null => {
+    const s = input.trim().toLowerCase();
+    if (!s) return null;
+    if (["bw", "b/w", "b+w", "black & white", "black and white", "black_white"].some((k) => s.includes(k.replaceAll("_", " ")))) {
+      return "bw";
+    }
+    if (s.includes("color") || s.includes("colour")) return "color";
+    return null;
+  };
+
+  const applyCustomFieldToOrder = (name: string, fieldType: ServiceCustomField["type"], value: any) => {
+    setOrder((prev) => {
+      const next = { ...prev };
+
+      const key = name.trim().toLowerCase();
+
+      const isNumPagesKey = ["num_pages", "number_of_pages", "pages", "number_pages"].includes(key);
+      const isNumCopiesKey = ["num_copies", "number_of_copies", "copies", "number_copies"].includes(key);
+      const isPrintAllPagesKey = ["print_all_pages", "printallpages", "all_pages"].includes(key);
+      const isPageRangeKey = ["page_range", "pages_range", "page-range"].includes(key);
+      const isFirstPageColorKey = ["first_page_color", "firstpagecolor"].includes(key);
+      const isFirstPagePhotoSheetKey = ["first_page_photo_sheet", "firstpagephotosheet"].includes(key);
+      const isGlassWhiteSheetKey = ["glass_white_sheet", "glasswhitesheet"].includes(key);
+      const isColorModeKey = ["color_mode", "print_type", "color", "print_mode", "color_mode_select"].includes(key);
+      const isSpiralColorKey = ["spiral_color"].includes(key);
+      const isSpiralPageColorKey = ["page_color"].includes(key);
+
+      if (isNumPagesKey) {
+        const n = typeof value === "number" ? value : Number(value);
+        next.numPages = Number.isFinite(n) ? Math.max(1, Math.floor(n)) : prev.numPages;
+      }
+      if (isNumCopiesKey) {
+        const n = typeof value === "number" ? value : Number(value);
+        next.numCopies = Number.isFinite(n) ? Math.max(1, Math.floor(n)) : prev.numCopies;
+      }
+      if (isPrintAllPagesKey && fieldType === "checkbox") next.printAllPages = !!value;
+      if (isPageRangeKey && typeof value === "string") next.pageRange = value;
+      if (isFirstPageColorKey && fieldType === "checkbox") next.firstPageColor = !!value;
+      if (isFirstPagePhotoSheetKey && fieldType === "checkbox") next.firstPagePhotoSheet = !!value;
+      if (isGlassWhiteSheetKey && fieldType === "checkbox") next.glassWhiteSheet = !!value;
+      if (isColorModeKey && typeof value === "string") {
+        const normalized = normalizeColorMode(value);
+        if (normalized) next.colorMode = normalized;
+      }
+      if (isSpiralColorKey && typeof value === "string") next.spiralColor = value;
+      if (isSpiralPageColorKey && typeof value === "string") next.pageColor = value;
+
+      return next;
+    });
+  };
+
+  const handleCustomValueChange = (name: string, value: any) => {
+    setCustomFieldValues((prev) => ({ ...prev, [name]: value }));
+    setCustomFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    const field = serviceCustomFields.find((f) => f.name === name);
+    if (field) applyCustomFieldToOrder(name, field.type, value);
+  };
+
+  const handleCustomFileChange = (name: string, file: File | null) => {
+    setCustomFieldFiles((prev) => ({ ...prev, [name]: file }));
+    setCustomFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    if (name === "file") {
+      setOrder((prev) => ({
+        ...prev,
+        file,
+        fileName: file?.name ?? "",
+        fileUrl: "",
+      }));
+    }
+  };
+
   const validateStep = () => {
     switch (step) {
       case 1:
-        if (!order.file) { toast({ title: "Please upload a file", variant: "destructive" }); return false; }
+        if (shouldUseCustomFileFields) {
+          const nextErrors: Record<string, string> = {};
+          for (const f of fileCustomFields) {
+            if (!f.required) continue;
+            const file = customFieldFiles[f.name];
+            if (!file) {
+              nextErrors[f.name] = "This field is required.";
+              continue;
+            }
+            if (f.max_file_size_bytes && file.size > f.max_file_size_bytes) {
+              nextErrors[f.name] = `File is too large. Max size is ${(f.max_file_size_bytes / (1024 * 1024)).toFixed(0)}MB.`;
+            }
+          }
+          setCustomFieldErrors(nextErrors);
+          if (Object.keys(nextErrors).length) {
+            toast({ title: "Please complete required fields", description: "Check the highlighted custom file inputs.", variant: "destructive" });
+            return false;
+          }
+          return true;
+        }
+        if (!order.file) {
+          toast({ title: "Please upload a file", variant: "destructive" });
+          return false;
+        }
         return true;
       case 2:
-        if (order.numPages < 1) { toast({ title: "Enter valid number of pages", variant: "destructive" }); return false; }
-        if (order.numCopies < 1) { toast({ title: "Enter valid number of copies", variant: "destructive" }); return false; }
-        if (!order.printAllPages && !order.pageRange.trim()) { toast({ title: "Enter page range", variant: "destructive" }); return false; }
+        if (hasCustomFields) {
+          const nextErrors: Record<string, string> = {};
+          for (const f of nonFileCustomFields) {
+            if (!f.required) continue;
+            const v = customFieldValues[f.name];
+            if (f.type === "checkbox") {
+              if (!v) nextErrors[f.name] = "This field is required.";
+            } else if (f.type === "number") {
+              if (typeof v !== "number" || !Number.isFinite(v)) nextErrors[f.name] = "Enter a valid number.";
+            } else {
+              if (typeof v !== "string" || !v.trim()) nextErrors[f.name] = "This field is required.";
+            }
+          }
+          setCustomFieldErrors(nextErrors);
+          if (Object.keys(nextErrors).length) {
+            toast({ title: "Please complete required fields", description: "Check the highlighted custom inputs.", variant: "destructive" });
+            return false;
+          }
+          return true;
+        }
+
+        if (order.numPages < 1) {
+          toast({ title: "Enter valid number of pages", variant: "destructive" });
+          return false;
+        }
+        if (order.numCopies < 1) {
+          toast({ title: "Enter valid number of copies", variant: "destructive" });
+          return false;
+        }
+        if (!order.printAllPages && !order.pageRange.trim()) {
+          toast({ title: "Enter page range", variant: "destructive" });
+          return false;
+        }
         return true;
       case 3:
         if (isSpiral) return true;
@@ -271,8 +476,10 @@ const OrderPage = () => {
   const getStepContent = () => {
     if (isSpiral) {
       switch (step) {
-        case 1: return renderFileUpload();
-        case 2: return renderPrintOptions();
+        case 1:
+          return shouldUseCustomFileFields ? renderCustomFileFields() : renderFileUpload();
+        case 2:
+          return hasCustomFields ? renderCustomNonFileFields() : renderPrintOptions();
         case 3: return renderSpiralOptions();
         case 4: return renderUserDetails();
         case 5: return renderBillSummary();
@@ -281,8 +488,10 @@ const OrderPage = () => {
       }
     } else {
       switch (step) {
-        case 1: return renderFileUpload();
-        case 2: return renderPrintOptions();
+        case 1:
+          return shouldUseCustomFileFields ? renderCustomFileFields() : renderFileUpload();
+        case 2:
+          return hasCustomFields ? renderCustomNonFileFields() : renderPrintOptions();
         case 3: return renderUserDetails();
         case 4: return renderBillSummary();
         case 5: return renderLoginToPlaceOrder();
@@ -329,8 +538,52 @@ const OrderPage = () => {
     if (!user) return;
     setSubmitting(true);
     try {
-      const filePath = await uploadFile();
-      if (!filePath) { setSubmitting(false); return; }
+      let filePath: string | null = null;
+      let fileNameForOrder: string | null = order.fileName || null;
+      if (order.file) {
+        const uploaded = await uploadFile();
+        if (uploaded) {
+          filePath = uploaded;
+          fileNameForOrder = order.fileName || null;
+        }
+      }
+
+      const customFieldValuesPayload: Record<string, any> = {};
+
+      // Upload custom files (service-specific uploads)
+      for (const field of fileCustomFields) {
+        const selectedFile = field.name === "file" ? order.file : customFieldFiles[field.name] ?? null;
+        if (!selectedFile) continue;
+
+        if (field.name === "file" && filePath) {
+          customFieldValuesPayload[field.name] = { file_path: filePath, file_name: selectedFile.name };
+          continue;
+        }
+
+        setUploading(true);
+        const ext = selectedFile.name.split(".").pop() || "file";
+        const path = `${user.id}/${field.name}/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage.from("order-files").upload(path, selectedFile);
+        setUploading(false);
+        if (uploadErr) throw uploadErr;
+
+        customFieldValuesPayload[field.name] = { file_path: path, file_name: selectedFile.name };
+
+        // If admin uses a custom file field named "file" but base order.file wasn't set, keep DB columns consistent.
+        if (field.name === "file") {
+          filePath = path;
+          fileNameForOrder = selectedFile.name;
+        } else if (!filePath) {
+          // Fallback: expose at least one uploaded file via existing file_url/file_name columns
+          filePath = path;
+          fileNameForOrder = selectedFile.name;
+        }
+      }
+
+      for (const field of nonFileCustomFields) {
+        if (customFieldValues[field.name] === undefined) continue;
+        customFieldValuesPayload[field.name] = customFieldValues[field.name];
+      }
 
       const { data: orderNumData } = await supabase.rpc("generate_order_number");
       const num = orderNumData || `PSH-${Date.now()}`;
@@ -340,7 +593,7 @@ const OrderPage = () => {
         user_id: user.id,
         service_slug: slug || "",
         file_url: filePath,
-        file_name: order.fileName,
+        file_name: fileNameForOrder,
         print_all_pages: order.printAllPages,
         page_range: order.pageRange || null,
         num_pages: order.numPages,
@@ -361,6 +614,7 @@ const OrderPage = () => {
         special_charges: prices.specialCharges,
         total_amount: prices.total,
         status: "pending",
+        custom_field_values: customFieldValuesPayload,
       });
 
       if (error) throw error;
@@ -404,6 +658,54 @@ const OrderPage = () => {
           )}
         </label>
       </div>
+    </div>
+  );
+
+  const renderCustomFileFields = () => {
+    if (!fileCustomFields.length) return renderFileUpload();
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <Upload className="w-12 h-12 text-primary mx-auto mb-3" />
+          <h3 className="text-xl font-semibold text-foreground mb-1">Upload Required Files</h3>
+          <p className="text-muted-foreground text-sm">These uploads are defined per service.</p>
+        </div>
+        <ServiceCustomFieldsForm
+          fields={fileCustomFields}
+          values={customFieldValues}
+          fileValues={customFieldFiles}
+          errors={customFieldErrors}
+          onChangeValue={handleCustomValueChange}
+          onChangeFile={handleCustomFileChange}
+        />
+      </div>
+    );
+  };
+
+  const renderCustomNonFileFields = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <Settings className="w-12 h-12 text-primary mx-auto mb-3" />
+        <h3 className="text-xl font-semibold text-foreground">Custom Options</h3>
+        <p className="text-muted-foreground text-sm">Fill the fields below to place your order.</p>
+      </div>
+
+      <ServiceCustomFieldsForm
+        fields={nonFileCustomFields}
+        values={customFieldValues}
+        fileValues={customFieldFiles}
+        errors={customFieldErrors}
+        onChangeValue={handleCustomValueChange}
+        onChangeFile={handleCustomFileChange}
+      />
+
+      {pricing && (
+        <div className="bg-accent/50 rounded-lg p-4 text-sm">
+          <p className="font-medium text-foreground">
+            Live Estimate: <span className="text-primary">₹{prices.total.toFixed(2)}</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 

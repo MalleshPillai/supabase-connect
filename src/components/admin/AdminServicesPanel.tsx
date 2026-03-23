@@ -16,6 +16,9 @@ import { slugifyFromName } from "@/lib/slugify";
 import { SERVICE_LUCIDE_ICON_NAMES, isIconImageUrl } from "@/lib/serviceIcons";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import type { ServiceCustomField } from "@/lib/serviceCustomFields";
+import { normalizeCustomFields } from "@/lib/serviceCustomFields";
+import { ServiceCustomFieldsBuilder } from "@/components/admin/ServiceCustomFieldsBuilder";
 
 const SERVICE_CATEGORIES = ["Printing", "Binding", "Manuals", "Other"] as const;
 
@@ -68,6 +71,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState(true);
   const [displayOrder, setDisplayOrder] = useState("0");
+  const [customFields, setCustomFields] = useState<ServiceCustomField[]>([]);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<ServiceRow | null>(null);
@@ -82,6 +86,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
   const [editPrice, setEditPrice] = useState("");
   const [editStatus, setEditStatus] = useState(true);
   const [editDisplayOrder, setEditDisplayOrder] = useState("0");
+  const [editCustomFields, setEditCustomFields] = useState<ServiceCustomField[]>([]);
 
   const invalidateServices = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-services"] });
@@ -100,6 +105,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
     setPrice("");
     setStatus(true);
     setDisplayOrder("0");
+    setCustomFields([]);
   };
 
   const onNameChange = (v: string) => {
@@ -122,6 +128,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
     setEditPrice(row.price != null ? String(row.price) : "");
     setEditStatus(row.status !== false);
     setEditDisplayOrder(String(row.display_order ?? 0));
+    setEditCustomFields(normalizeCustomFields(row.custom_fields));
     setEditOpen(true);
   };
 
@@ -167,6 +174,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
         price: price.trim() === "" ? null : Number(price),
         status,
         display_order: Number(displayOrder) || 0,
+        custom_fields: customFields as any,
       });
       if (error) {
         if (error.code === "23505") {
@@ -226,6 +234,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
           price: editPrice.trim() === "" ? null : Number(editPrice),
           status: editStatus,
           display_order: Number(editDisplayOrder) || 0,
+          custom_fields: editCustomFields as any,
         })
         .eq("id", editing.id);
       if (error) {
@@ -363,6 +372,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
               <Label htmlFor="svc-order">Display order</Label>
               <Input id="svc-order" type="number" value={displayOrder} onChange={(e) => setDisplayOrder(e.target.value)} />
             </div>
+            <ServiceCustomFieldsBuilder value={customFields} onChange={setCustomFields} />
             <Button type="submit" disabled={submitting} className="min-w-[140px]">
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Service"}
             </Button>
@@ -514,6 +524,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
                 <Label>Display order</Label>
                 <Input type="number" value={editDisplayOrder} onChange={(e) => setEditDisplayOrder(e.target.value)} />
               </div>
+              <ServiceCustomFieldsBuilder value={editCustomFields} onChange={setEditCustomFields} />
             </div>
           )}
           <DialogFooter>

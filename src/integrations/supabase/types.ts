@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           binding_charges: number | null
           color_mode: string
+          custom_field_values: Json | null
           created_at: string | null
           delivery_address: string
           email: string
@@ -48,6 +49,7 @@ export type Database = {
         Insert: {
           binding_charges?: number | null
           color_mode?: string
+          custom_field_values?: Json | null
           created_at?: string | null
           delivery_address: string
           email: string
@@ -78,6 +80,7 @@ export type Database = {
         Update: {
           binding_charges?: number | null
           color_mode?: string
+          custom_field_values?: Json | null
           created_at?: string | null
           delivery_address?: string
           email?: string
@@ -161,6 +164,7 @@ export type Database = {
       services: {
         Row: {
           category: string | null
+          custom_fields: Json | null
           created_at: string | null
           description: string | null
           display_order: number | null
@@ -173,6 +177,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          custom_fields?: Json | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
@@ -185,6 +190,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          custom_fields?: Json | null
           created_at?: string | null
           description?: string | null
           display_order?: number | null
