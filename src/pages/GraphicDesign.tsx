@@ -83,28 +83,29 @@ const GraphicDesign = () => {
         title: "Porsche Campaign Poster",
         category: "Automotive",
         description: "Luxury campaign poster with bold contrast and premium typography.",
-        imageWebp: "/designs/porsche-poster.webp",
+        // Use SVGs that exist in /public/designs/. (If you later add .webp versions, we can switch back.)
+        imageWebp: "/designs/porsche-poster.svg",
         imageFallbackSvg: "/designs/porsche-poster.svg",
       },
       {
         title: "Pongal Festival Poster",
         category: "Festival",
         description: "Vibrant festival artwork designed to stand out on streets and feeds.",
-        imageWebp: "/designs/pongal-poster.webp",
+        imageWebp: "/designs/pongal-poster.svg",
         imageFallbackSvg: "/designs/pongal-poster.svg",
       },
       {
         title: "Event Promotion Poster",
         category: "Event",
         description: "High-clarity event poster layouts for maximum visibility.",
-        imageWebp: "/designs/event-poster.webp",
+        imageWebp: "/designs/event-poster.svg",
         imageFallbackSvg: "/designs/event-poster.svg",
       },
       {
         title: "Social Media Creative",
         category: "Social Media",
         description: "Scroll-stopping creatives tailored for Instagram and other platforms.",
-        imageWebp: "/designs/social-media-poster.webp",
+        imageWebp: "/designs/social-media-poster.svg",
         imageFallbackSvg: "/designs/social-media-poster.svg",
       },
     ],
@@ -308,7 +309,7 @@ const GraphicDesign = () => {
               </p>
             </motion.div>
 
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
               {posters.map((p) => (
                 <div
                   key={p.title}
