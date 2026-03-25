@@ -28,8 +28,10 @@ import {
   Package,
   PlusCircle,
   ClipboardList,
+  LayoutList,
 } from "lucide-react";
 import { AdminServicesPanel } from "@/components/admin/AdminServicesPanel";
+import { AdminLandingFormFieldsPanel } from "@/components/admin/AdminLandingFormFieldsPanel";
 import { motion, AnimatePresence } from "framer-motion";
 
 const statusOptions = ["pending", "printing", "ready", "delivered"];
@@ -40,7 +42,14 @@ const statusColors: Record<string, string> = {
   delivered: "bg-slate-500/15 text-slate-600 dark:text-slate-400",
 };
 
-type AdminView = "dashboard" | "orders" | "pricing" | "enquiries" | "services-create" | "services-manage";
+type AdminView =
+  | "dashboard"
+  | "orders"
+  | "pricing"
+  | "enquiries"
+  | "services-create"
+  | "services-manage"
+  | "landing-fields";
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -163,6 +172,7 @@ const Admin = () => {
   const servicesNav: { id: AdminView; label: string; icon: React.ElementType }[] = [
     { id: "services-create", label: "Create Service", icon: PlusCircle },
     { id: "services-manage", label: "Manage Services", icon: ClipboardList },
+    { id: "landing-fields", label: "Landing form fields", icon: LayoutList },
   ];
 
   if (authLoading) {
@@ -643,6 +653,19 @@ const Admin = () => {
                 >
                   <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Services</h1>
                   <AdminServicesPanel mode="manage" />
+                </motion.div>
+              )}
+
+              {view === "landing-fields" && (
+                <motion.div
+                  key="landing-fields"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-6"
+                >
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Categories and form fields</h1>
+                  <AdminLandingFormFieldsPanel />
                 </motion.div>
               )}
             </AnimatePresence>

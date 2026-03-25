@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { SERVICE_CATEGORY_XEROX } from "@/lib/serviceCategories";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +22,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
         .from("services")
         .select("*")
         .eq("status", true)
+        .eq("category", SERVICE_CATEGORY_XEROX)
         .order("display_order", { ascending: true });
       if (error) throw error;
       return data;
@@ -69,7 +71,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
   };
 
   return (
-    <section id="services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
+    <section id="xerox-services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -79,13 +81,13 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
           className="text-center mb-16"
         >
           <Badge variant="secondary" className="mb-4 rounded-full px-4 py-1 text-xs font-medium">
-            What we offer
+            Xerox and Prints
           </Badge>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-4">
-            Our Services
+            Print shop services
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            From quick xerox to premium binding — everything you need under one roof.
+            From quick xerox to premium binding — order online in a few clicks.
           </p>
         </motion.div>
 

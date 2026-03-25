@@ -19,8 +19,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import type { ServiceCustomField } from "@/lib/serviceCustomFields";
 import { normalizeCustomFields } from "@/lib/serviceCustomFields";
 import { ServiceCustomFieldsBuilder } from "@/components/admin/ServiceCustomFieldsBuilder";
-
-const SERVICE_CATEGORIES = ["Printing", "Binding", "Manuals", "Other"] as const;
+import { SERVICE_CATEGORIES, SERVICE_CATEGORY_XEROX } from "@/lib/serviceCategories";
 
 type ServiceRow = Tables<"services">;
 
@@ -67,7 +66,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
   const [iconMode, setIconMode] = useState<IconMode>("lucide");
   const [lucideIcon, setLucideIcon] = useState<string>("FileText");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [category, setCategory] = useState<string>(SERVICE_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(SERVICE_CATEGORY_XEROX);
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState(true);
   const [displayOrder, setDisplayOrder] = useState("0");
@@ -82,7 +81,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
   const [editIconMode, setEditIconMode] = useState<IconMode>("lucide");
   const [editLucideIcon, setEditLucideIcon] = useState("FileText");
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
-  const [editCategory, setEditCategory] = useState(SERVICE_CATEGORIES[0]);
+  const [editCategory, setEditCategory] = useState(SERVICE_CATEGORY_XEROX);
   const [editPrice, setEditPrice] = useState("");
   const [editStatus, setEditStatus] = useState(true);
   const [editDisplayOrder, setEditDisplayOrder] = useState("0");
@@ -101,7 +100,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
     setIconMode("lucide");
     setLucideIcon("FileText");
     setImageFile(null);
-    setCategory(SERVICE_CATEGORIES[0]);
+    setCategory(SERVICE_CATEGORY_XEROX);
     setPrice("");
     setStatus(true);
     setDisplayOrder("0");
@@ -124,7 +123,7 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
     setEditLucideIcon(img ? "FileText" : row.icon || "FileText");
     setEditImageFile(null);
     const cat = row.category ?? "";
-    setEditCategory((SERVICE_CATEGORIES as readonly string[]).includes(cat) ? cat : SERVICE_CATEGORIES[0]);
+    setEditCategory((SERVICE_CATEGORIES as readonly string[]).includes(cat) ? cat : SERVICE_CATEGORY_XEROX);
     setEditPrice(row.price != null ? String(row.price) : "");
     setEditStatus(row.status !== false);
     setEditDisplayOrder(String(row.display_order ?? 0));
@@ -356,6 +355,9 @@ export function AdminServicesPanel({ mode }: AdminServicesPanelProps) {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Xerox and Prints: order flow on the site. Paper projects and Graphic Design: optional listings (e.g. on those pages).
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="svc-price">Price (optional)</Label>

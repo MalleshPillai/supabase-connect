@@ -161,6 +161,72 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_form_fields: {
+        Row: {
+          id: string
+          category: string
+          field_key: string
+          label: string
+          field_type: string
+          options: Json
+          required: boolean
+          display_order: number
+          active: boolean
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          category: string
+          field_key: string
+          label: string
+          field_type: string
+          options?: Json
+          required?: boolean
+          display_order?: number
+          active?: boolean
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          category?: string
+          field_key?: string
+          label?: string
+          field_type?: string
+          options?: Json
+          required?: boolean
+          display_order?: number
+          active?: boolean
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      paper_project_submissions: {
+        Row: {
+          id: string
+          full_name: string
+          phone: string | null
+          email: string | null
+          responses: Json
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          full_name: string
+          phone?: string | null
+          email?: string | null
+          responses?: Json
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          phone?: string | null
+          email?: string | null
+          responses?: Json
+          created_at?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           category: string | null

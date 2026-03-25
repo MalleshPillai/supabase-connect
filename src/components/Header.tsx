@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { SERVICE_CATEGORY_XEROX } from "@/lib/serviceCategories";
 
 const MAX_SUGGESTIONS = 6;
 
@@ -27,6 +28,7 @@ const Header = () => {
         .from("services")
         .select("id, name, slug")
         .eq("status", true)
+        .eq("category", SERVICE_CATEGORY_XEROX)
         .order("display_order", { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -62,7 +64,7 @@ const Header = () => {
 
   const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Services", to: "/#services" },
+    { label: "Services", to: "/#xerox-services" },
     { label: "About", to: "/about" },
     { label: "Contact", to: "/contact" },
   ];

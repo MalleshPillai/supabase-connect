@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,48 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, MessageCircle, Phone, Sparkles, Wand2 } from "lucide-react";
+import { Mail, MessageCircle, Phone, Sparkles, Wand2, FileText } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SERVICE_CATEGORY_GRAPHIC, LANDING_FORM_CATEGORY_GRAPHIC } from "@/lib/serviceCategories";
+import { SERVICE_LUCIDE_ICONS, isIconImageUrl } from "@/lib/serviceIcons";
+import type { Tables } from "@/integrations/supabase/types";
+
+const POSTER_STARTING_PRICE = 299;
+
+type LandingFieldRow = Tables<"landing_form_fields">;
+
+function parseOptions(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
+}
+
+function GraphicServiceIcon({ icon }: { icon: string | null | undefined }) {
+  const url = icon && isIconImageUrl(icon) ? icon : null;
+  const [broken, setBroken] = useState(false);
+  if (url && !broken) {
+    return (
+      <img src={url} alt="" className="h-full w-full object-contain p-1" onError={() => setBroken(true)} />
+    );
+  }
+  const LucideIcon = icon && SERVICE_LUCIDE_ICONS[icon] ? SERVICE_LUCIDE_ICONS[icon] : FileText;
+  return <LucideIcon className="w-6 h-6 text-primary" />;
+}
+
+async function uploadLandingFile(file: File): Promise<string> {
+  const safe = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  const path = `graphic/${crypto.randomUUID()}-${safe}`;
+  const { error } = await supabase.storage.from("paper-submissions").upload(path, file, {
+    cacheControl: "3600",
+    upsert: false,
+  });
+  if (error) throw error;
+  const { data } = supabase.storage.from("paper-submissions").getPublicUrl(path);
+  return data.publicUrl;
+}
 
 type PosterCategory = "Automotive" | "Festival" | "Social Media" | "Event";
 
@@ -110,6 +148,36 @@ const GraphicDesign = () => {
   const [selectedPoster, setSelectedPoster] = useState<Poster | null>(null);
   const [contact, setContact] = useState({ name: "", phone: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
+  const [extraFieldValues, setExtraFieldValues] = useState<Record<string, string>>({});
+  const [extraFieldFiles, setExtraFieldFiles] = useState<Record<string, File | null>>({});
+
+  const { data: graphicServices } = useQuery({
+    queryKey: ["services", "graphic-design"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("services")
+        .select("*")
+        .eq("status", true)
+        .eq("category", SERVICE_CATEGORY_GRAPHIC)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const { data: graphicFormFields } = useQuery({
+    queryKey: ["landing-form-fields", LANDING_FORM_CATEGORY_GRAPHIC],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("landing_form_fields")
+        .select("*")
+        .eq("category", LANDING_FORM_CATEGORY_GRAPHIC)
+        .eq("active", true)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as LandingFieldRow[];
+    },
+  });
 
   const whatsappHref =
     "https://wa.me/919363926173?text=Hi%2C%20I%20need%20a%20graphic%20design%20for%20posters%2Fcreatives%20in%20Chennai.";
@@ -143,7 +211,7 @@ const GraphicDesign = () => {
       <CardContent className="pt-0">
         <p className="text-muted-foreground leading-relaxed">{description}</p>
         <div className="mt-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-accent/40 border border-primary/10 text-foreground/80">
-          Starting from ₹499
+          Starting from ₹{POSTER_STARTING_PRICE}
         </div>
       </CardContent>
     </Card>
@@ -162,20 +230,50 @@ const GraphicDesign = () => {
       toast({ title: "Please fill all contact fields", variant: "destructive" });
       return;
     }
+    const fields = graphicFormFields ?? [];
+    for (const f of fields) {
+      if (!f.required) continue;
+      if (f.field_type === "file") {
+        if (!extraFieldFiles[f.field_key]) {
+          toast({ title: `${f.label} is required`, variant: "destructive" });
+          return;
+        }
+      } else if (!String(extraFieldValues[f.field_key] ?? "").trim()) {
+        toast({ title: `${f.label} is required`, variant: "destructive" });
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
+      const extraLines: string[] = [];
+      for (const f of fields) {
+        if (f.field_type === "file") {
+          const file = extraFieldFiles[f.field_key];
+          if (file) {
+            const url = await uploadLandingFile(file);
+            extraLines.push(`${f.label}: ${url}`);
+          }
+        } else {
+          const v = String(extraFieldValues[f.field_key] ?? "").trim();
+          if (v) extraLines.push(`${f.label}: ${v}`);
+        }
+      }
+      const extraBlock = extraLines.length ? `\n\n---\n${extraLines.join("\n")}` : "";
       const supabaseAny = supabase as any;
       const { error } = await supabaseAny.from("inquiries").insert({
         name: contact.name.trim(),
         phone: contact.phone.trim(),
         email: null,
-        message: contact.message.trim(),
+        message: `${contact.message.trim()}${extraBlock}`,
         source: "graphic-design",
       });
       if (error) throw error;
 
       toast({ title: "Request sent!", description: "We’ll contact you shortly." });
       setContact({ name: "", phone: "", message: "" });
+      setExtraFieldValues({});
+      setExtraFieldFiles({});
     } catch (err: any) {
       toast({ title: "Error sending request", description: err?.message ?? "Please try again.", variant: "destructive" });
     } finally {
@@ -237,7 +335,7 @@ const GraphicDesign = () => {
                     { k: "Fast turnaround", v: "24-72 hours" },
                     { k: "Premium output", v: "Print + web ready" },
                     { k: "Unlimited revisions", v: "Up to your satisfaction" },
-                    { k: "Budget-friendly", v: "Starting from ₹499" },
+                    { k: "Budget-friendly", v: `Starting from ₹${POSTER_STARTING_PRICE}` },
                   ].map((x) => (
                     <div
                       key={x.k}
@@ -376,26 +474,54 @@ const GraphicDesign = () => {
             </motion.div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              <ServicesCard
-                icon={ServiceIconMap.poster}
-                title="Poster Design"
-                description="Luxury print-ready poster layouts with sharp hierarchy and premium visuals."
-              />
-              <ServicesCard
-                icon={ServiceIconMap.insta}
-                title="Instagram Creatives"
-                description="Scroll-stopping posts and story creatives built for engagement."
-              />
-              <ServicesCard
-                icon={ServiceIconMap.event}
-                title="Event Banners"
-                description="Impact banners and promotional creatives with bold readability at distance."
-              />
-              <ServicesCard
-                icon={ServiceIconMap.flyer}
-                title="Business Flyers"
-                description="Clean, modern flyers for offers, businesses, and local campaigns."
-              />
+              {graphicServices && graphicServices.length > 0
+                ? graphicServices.map((svc) => (
+                    <Card
+                      key={svc.id}
+                      className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5 shadow-sm hover:shadow-lg transition-shadow overflow-hidden"
+                    >
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                            <GraphicServiceIcon icon={svc.icon} />
+                          </div>
+                          <div>
+                            <CardTitle className="text-base sm:text-lg">{svc.name}</CardTitle>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-muted-foreground leading-relaxed">{svc.description ?? ""}</p>
+                        <div className="mt-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium bg-accent/40 border border-primary/10 text-foreground/80">
+                          Starting from ₹{svc.price != null && svc.price > 0 ? svc.price : POSTER_STARTING_PRICE}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                : (
+                    <>
+                      <ServicesCard
+                        icon={ServiceIconMap.poster}
+                        title="Poster Design"
+                        description="Luxury print-ready poster layouts with sharp hierarchy and premium visuals."
+                      />
+                      <ServicesCard
+                        icon={ServiceIconMap.insta}
+                        title="Instagram Creatives"
+                        description="Scroll-stopping posts and story creatives built for engagement."
+                      />
+                      <ServicesCard
+                        icon={ServiceIconMap.event}
+                        title="Event Banners"
+                        description="Impact banners and promotional creatives with bold readability at distance."
+                      />
+                      <ServicesCard
+                        icon={ServiceIconMap.flyer}
+                        title="Business Flyers"
+                        description="Clean, modern flyers for offers, businesses, and local campaigns."
+                      />
+                    </>
+                  )}
             </div>
           </div>
         </section>
@@ -475,6 +601,63 @@ const GraphicDesign = () => {
                         rows={4}
                         maxLength={1000}
                       />
+
+                      {(graphicFormFields ?? []).map((f) => (
+                        <div key={f.id} className="space-y-2">
+                          <Label htmlFor={`gd-${f.field_key}`}>
+                            {f.label}
+                            {f.required ? " *" : ""}
+                          </Label>
+                          {f.field_type === "text" && (
+                            <Input
+                              id={`gd-${f.field_key}`}
+                              value={extraFieldValues[f.field_key] ?? ""}
+                              onChange={(e) =>
+                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                              }
+                            />
+                          )}
+                          {f.field_type === "textarea" && (
+                            <Textarea
+                              id={`gd-${f.field_key}`}
+                              value={extraFieldValues[f.field_key] ?? ""}
+                              onChange={(e) =>
+                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                              }
+                              rows={3}
+                            />
+                          )}
+                          {f.field_type === "select" && (
+                            <select
+                              id={`gd-${f.field_key}`}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                              value={extraFieldValues[f.field_key] ?? ""}
+                              onChange={(e) =>
+                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                              }
+                            >
+                              <option value="">Select…</option>
+                              {parseOptions(f.options).map((opt) => (
+                                <option key={opt} value={opt}>
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {f.field_type === "file" && (
+                            <Input
+                              id={`gd-${f.field_key}`}
+                              type="file"
+                              onChange={(e) =>
+                                setExtraFieldFiles((p) => ({
+                                  ...p,
+                                  [f.field_key]: e.target.files?.[0] ?? null,
+                                }))
+                              }
+                            />
+                          )}
+                        </div>
+                      ))}
 
                       <div className="flex items-center gap-3">
                         <Button type="submit" disabled={submitting} className="w-full touch-manipulation">

@@ -27,7 +27,7 @@ const Footer = () => {
             <ul className="space-y-3">
               {[
                 { to: "/", label: "Home" },
-                { to: "/#services", label: "Services" },
+                { to: "/#xerox-services", label: "Services" },
                 { to: "/about", label: "About" },
                 { to: "/contact", label: "Contact" },
               ].map(({ to, label }) => (

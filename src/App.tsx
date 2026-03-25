@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import GraphicDesign from "./pages/GraphicDesign";
+import PaperProjectPage from "./pages/PaperProjectPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/graphic-design" element={<GraphicDesign />} />
+            <Route path="/paper-project" element={<PaperProjectPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
