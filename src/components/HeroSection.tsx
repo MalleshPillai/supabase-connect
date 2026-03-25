@@ -112,7 +112,7 @@ const HeroSection = () => {
             transition={{ duration: 0.5, delay: 0.35 }}
             className="flex flex-wrap items-center gap-3 sm:gap-4"
           >
-            <Link to="/#xerox-services" className="min-h-[48px] flex items-center">
+            <Link to="/xerox-prints" className="min-h-[48px] flex items-center">
               <Button
                 size="lg"
                 className="h-12 min-w-[140px] px-6 sm:px-8 rounded-full text-base font-semibold bg-gradient-to-r from-white via-slate-50 to-primary/10 text-primary hover:opacity-95 shadow-xl shadow-black/20 active:scale-[0.98] transition-all duration-300 animate-glow touch-manipulation"

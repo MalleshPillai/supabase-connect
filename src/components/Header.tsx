@@ -64,7 +64,7 @@ const Header = () => {
 
   const navLinks = [
     { label: "Home", to: "/" },
-    { label: "Services", to: "/#xerox-services" },
+    { label: "Services", to: "/xerox-prints" },
     { label: "About", to: "/about" },
     { label: "Contact", to: "/contact" },
   ];
@@ -72,7 +72,7 @@ const Header = () => {
   const submitSearch = (query: string) => {
     const q = query.trim();
     if (q) {
-      navigate(`/?search=${encodeURIComponent(q)}`);
+      navigate(`/xerox-prints?search=${encodeURIComponent(q)}`);
       setSearchQuery("");
       setDropdownFocused(false);
       setMobileOpen(false);

@@ -25,7 +25,7 @@ const categories = [
   {
     title: "Xerox and Prints",
     description: "Copying, printing, binding, and everything you already love — order online in a few clicks.",
-    href: "/#xerox-services",
+    href: "/xerox-prints",
     icon: Printer,
     action: "Browse services",
     variant: "outline" as const,
@@ -57,7 +57,6 @@ const LandingCategoriesSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
           {categories.map((c, i) => {
             const Icon = c.icon;
-            const isAnchor = c.href.startsWith("/#");
             return (
               <motion.div
                 key={c.title}
@@ -74,21 +73,12 @@ const LandingCategoriesSection = () => {
                     <h3 className="mt-5 text-xl font-semibold text-foreground tracking-tight">{c.title}</h3>
                     <p className="mt-2 text-sm text-muted-foreground leading-relaxed flex-1">{c.description}</p>
                     <div className="mt-6">
-                      {isAnchor ? (
-                        <Button variant={c.variant} className="w-full sm:w-auto gap-2" asChild>
-                          <a href={c.href}>
-                            {c.action}
-                            <ArrowRight className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <Button variant={c.variant} className="w-full sm:w-auto gap-2" asChild>
-                          <Link to={c.href}>
-                            {c.action}
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      )}
+                      <Button variant={c.variant} className="w-full sm:w-auto gap-2" asChild>
+                        <Link to={c.href}>
+                          {c.action}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
