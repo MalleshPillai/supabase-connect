@@ -28,7 +28,7 @@ const categories = [
     href: "/xerox-prints",
     icon: Printer,
     action: "Browse services",
-    variant: "outline" as const,
+    variant: "default" as const,
   },
 ];
 
