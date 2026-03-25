@@ -90,11 +90,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.12] mb-6 drop-shadow-sm text-balance"
           >
-            We{" "}
-            <span className="bg-gradient-to-r from-amber-200 via-yellow-200 to-amber-200 bg-clip-text text-transparent drop-shadow-sm">
-              finish
-            </span>{" "}
-            what your project starts.
+            We finish what your project starts.
           </motion.h1>
 
           <motion.p
