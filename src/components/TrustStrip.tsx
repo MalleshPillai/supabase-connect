@@ -5,17 +5,17 @@ const items = [
   {
     icon: Zap,
     label: "Quick turnaround",
-    sub: "Get your orders on time",
+    sub: "Fast print + binding, delivered to your doorstep",
   },
   {
     icon: Shield,
     label: "Quality guaranteed",
-    sub: "Professional finish every time",
+    sub: "Submission-ready finish with careful attention to detail",
   },
   {
     icon: IndianRupee,
     label: "Transparent pricing",
-    sub: "No hidden charges",
+    sub: "Simple, guided ordering—no hidden surprises",
   },
 ];
 

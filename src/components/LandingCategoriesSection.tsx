@@ -50,7 +50,7 @@ const LandingCategoriesSection = () => {
             What do you need today?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Paper work, design, or print shop services — pick a path and we will guide you.
+            Paper projects, design, or print services — we guide you end-to-end and deliver your final work.
           </p>
         </motion.div>
 

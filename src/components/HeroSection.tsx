@@ -99,7 +99,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="text-lg sm:text-xl text-white/90 max-w-xl leading-relaxed mb-10 drop-shadow-sm"
           >
-            From quick xerox to premium binding — quality printing for students, professionals, and businesses. Fast, reliable, hassle-free.
+            From research files and designs to print-ready binding and doorstep delivery — fast, reliable, and hassle-free.
           </motion.p>
 
           <motion.div
@@ -134,7 +134,7 @@ const HeroSection = () => {
             transition={{ delay: 0.6, duration: 0.5 }}
             className="mt-12 text-sm text-white/60"
           >
-            Trusted by students & professionals · Quick turnaround · Transparent pricing
+            Trusted by students & professionals · End-to-end execution · Doorstep delivery
           </motion.p>
         </div>
       </div>
