@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, MessageCircle, Phone, Sparkles, Wand2, FileText } from "lucide-react";
+import { CheckCircle, FileText, Mail, MessageCircle, Phone, Sparkles, Wand2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SERVICE_CATEGORY_GRAPHIC, LANDING_FORM_CATEGORY_GRAPHIC } from "@/lib/serviceCategories";
@@ -150,6 +151,8 @@ const GraphicDesign = () => {
   const [submitting, setSubmitting] = useState(false);
   const [extraFieldValues, setExtraFieldValues] = useState<Record<string, string>>({});
   const [extraFieldFiles, setExtraFieldFiles] = useState<Record<string, File | null>>({});
+  const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [contactWhatsAppConfirmHref, setContactWhatsAppConfirmHref] = useState<string>("");
 
   const { data: graphicServices } = useQuery({
     queryKey: ["services", "graphic-design"],
@@ -180,7 +183,7 @@ const GraphicDesign = () => {
   });
 
   const whatsappHref =
-    "https://wa.me/919363926173?text=Hi%2C%20I%20need%20a%20graphic%20design%20for%20posters%2Fcreatives%20in%20Chennai.";
+    "https://wa.me/916374939846?text=Hi%2C%20I%20need%20a%20graphic%20design%20for%20posters%2Fcreatives.";
 
   const scrollToId = (id: string) => {
     const el = document.getElementById(id);
@@ -230,6 +233,7 @@ const GraphicDesign = () => {
       toast({ title: "Please fill all contact fields", variant: "destructive" });
       return;
     }
+    setContactSubmitted(false);
     const fields = graphicFormFields ?? [];
     for (const f of fields) {
       if (!f.required) continue;
@@ -260,17 +264,21 @@ const GraphicDesign = () => {
         }
       }
       const extraBlock = extraLines.length ? `\n\n---\n${extraLines.join("\n")}` : "";
+      const submittedMessage = `${contact.message.trim()}${extraBlock}`;
       const supabaseAny = supabase as any;
       const { error } = await supabaseAny.from("inquiries").insert({
         name: contact.name.trim(),
         phone: contact.phone.trim(),
         email: null,
-        message: `${contact.message.trim()}${extraBlock}`,
+        message: submittedMessage,
         source: "graphic-design",
       });
       if (error) throw error;
 
-      toast({ title: "Request sent!", description: "We’ll contact you shortly." });
+      const confirmText = `Hi, I just placed a graphic design request. Please confirm.\n\n${submittedMessage}`;
+      setContactWhatsAppConfirmHref(`https://wa.me/916374939846?text=${encodeURIComponent(confirmText)}`);
+      setContactSubmitted(true);
+      toast({ title: "Request sent!", description: "Please confirm on WhatsApp." });
       setContact({ name: "", phone: "", message: "" });
       setExtraFieldValues({});
       setExtraFieldFiles({});
@@ -581,101 +589,130 @@ const GraphicDesign = () => {
                     <CardTitle>Send a quick request</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <form onSubmit={onSubmitContact} className="space-y-4">
-                      <Input
-                        placeholder="Your Name"
-                        value={contact.name}
-                        onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))}
-                        maxLength={100}
-                      />
-                      <Input
-                        placeholder="Phone / WhatsApp number"
-                        value={contact.phone}
-                        onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))}
-                        maxLength={15}
-                      />
-                      <Textarea
-                        placeholder="What do you want to design? (poster/creative/banner + size)"
-                        value={contact.message}
-                        onChange={(e) => setContact((p) => ({ ...p, message: e.target.value }))}
-                        rows={4}
-                        maxLength={1000}
-                      />
-
-                      {(graphicFormFields ?? []).map((f) => (
-                        <div key={f.id} className="space-y-2">
-                          <Label htmlFor={`gd-${f.field_key}`}>
-                            {f.label}
-                            {f.required ? " *" : ""}
-                          </Label>
-                          {f.field_type === "text" && (
-                            <Input
-                              id={`gd-${f.field_key}`}
-                              value={extraFieldValues[f.field_key] ?? ""}
-                              onChange={(e) =>
-                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
-                              }
-                            />
-                          )}
-                          {f.field_type === "textarea" && (
-                            <Textarea
-                              id={`gd-${f.field_key}`}
-                              value={extraFieldValues[f.field_key] ?? ""}
-                              onChange={(e) =>
-                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
-                              }
-                              rows={3}
-                            />
-                          )}
-                          {f.field_type === "select" && (
-                            <select
-                              id={`gd-${f.field_key}`}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                              value={extraFieldValues[f.field_key] ?? ""}
-                              onChange={(e) =>
-                                setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
-                              }
-                            >
-                              <option value="">Select…</option>
-                              {parseOptions(f.options).map((opt) => (
-                                <option key={opt} value={opt}>
-                                  {opt}
-                                </option>
-                              ))}
-                            </select>
-                          )}
-                          {f.field_type === "file" && (
-                            <Input
-                              id={`gd-${f.field_key}`}
-                              type="file"
-                              onChange={(e) =>
-                                setExtraFieldFiles((p) => ({
-                                  ...p,
-                                  [f.field_key]: e.target.files?.[0] ?? null,
-                                }))
-                              }
-                            />
-                          )}
+                    {contactSubmitted ? (
+                      <div className="text-center space-y-6 py-6">
+                        <CheckCircle className="w-16 h-16 text-green-600 mx-auto" />
+                        <div>
+                          <h3 className="text-2xl font-bold text-foreground mb-2">Request Sent!</h3>
+                          <p className="text-muted-foreground">
+                            Please confirm on WhatsApp so we can start your graphic design.
+                          </p>
                         </div>
-                      ))}
-
-                      <div className="flex items-center gap-3">
-                        <Button type="submit" disabled={submitting} className="w-full touch-manipulation">
-                          {submitting ? "Sending..." : "Send Request"}
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                          <a
+                            href={contactWhatsAppConfirmHref || whatsappHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block sm:inline-block"
+                          >
+                            <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto min-h-[48px] touch-manipulation">
+                              Confirm on WhatsApp
+                            </Button>
+                          </a>
+                          <Link to="/" className="block sm:inline-block">
+                            <Button variant="outline" className="min-h-[48px] touch-manipulation w-full sm:w-auto">
+                              Back to Home
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
+                    ) : (
+                      <form onSubmit={onSubmitContact} className="space-y-4">
+                        <Input
+                          placeholder="Your Name"
+                          value={contact.name}
+                          onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))}
+                          maxLength={100}
+                        />
+                        <Input
+                          placeholder="Phone / WhatsApp number"
+                          value={contact.phone}
+                          onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))}
+                          maxLength={15}
+                        />
+                        <Textarea
+                          placeholder="What do you want to design? (poster/creative/banner + size)"
+                          value={contact.message}
+                          onChange={(e) => setContact((p) => ({ ...p, message: e.target.value }))}
+                          rows={4}
+                          maxLength={1000}
+                        />
 
-                      <div className="flex items-center justify-between gap-4 pt-2 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          +91 93639 26173
-                        </span>
-                        <a href="mailto:info@precisionscripthub.com" className="hover:underline inline-flex items-center gap-2">
-                          <Mail className="w-4 h-4" />
-                          info@precisionscripthub.com
-                        </a>
-                      </div>
-                    </form>
+                        {(graphicFormFields ?? []).map((f) => (
+                          <div key={f.id} className="space-y-2">
+                            <Label htmlFor={`gd-${f.field_key}`}>
+                              {f.label}
+                              {f.required ? " *" : ""}
+                            </Label>
+                            {f.field_type === "text" && (
+                              <Input
+                                id={`gd-${f.field_key}`}
+                                value={extraFieldValues[f.field_key] ?? ""}
+                                onChange={(e) =>
+                                  setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                                }
+                              />
+                            )}
+                            {f.field_type === "textarea" && (
+                              <Textarea
+                                id={`gd-${f.field_key}`}
+                                value={extraFieldValues[f.field_key] ?? ""}
+                                onChange={(e) =>
+                                  setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                                }
+                                rows={3}
+                              />
+                            )}
+                            {f.field_type === "select" && (
+                              <select
+                                id={`gd-${f.field_key}`}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                value={extraFieldValues[f.field_key] ?? ""}
+                                onChange={(e) =>
+                                  setExtraFieldValues((p) => ({ ...p, [f.field_key]: e.target.value }))
+                                }
+                              >
+                                <option value="">Select…</option>
+                                {parseOptions(f.options).map((opt) => (
+                                  <option key={opt} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                            {f.field_type === "file" && (
+                              <Input
+                                id={`gd-${f.field_key}`}
+                                type="file"
+                                onChange={(e) =>
+                                  setExtraFieldFiles((p) => ({
+                                    ...p,
+                                    [f.field_key]: e.target.files?.[0] ?? null,
+                                  }))
+                                }
+                              />
+                            )}
+                          </div>
+                        ))}
+
+                        <div className="flex items-center gap-3">
+                          <Button type="submit" disabled={submitting} className="w-full touch-manipulation">
+                            {submitting ? "Sending..." : "Send Request"}
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 pt-2 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-2">
+                            <Phone className="w-4 h-4" />
+                            +91 63749 39846
+                          </span>
+                          <a href="mailto:info@precisionscripthub.com" className="hover:underline inline-flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            info@precisionscripthub.com
+                          </a>
+                        </div>
+                      </form>
+                    )}
                   </CardContent>
                 </Card>
               </div>
