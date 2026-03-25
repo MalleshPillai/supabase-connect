@@ -90,7 +90,7 @@ const HeroSection = () => {
             transition={{ duration: 0.6, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
             className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight text-white leading-[1.12] mb-6 drop-shadow-sm text-balance"
           >
-            We finish what your project starts.
+            Project become papers, Ideas become results
           </motion.h1>
 
           <motion.p
