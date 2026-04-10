@@ -29,6 +29,7 @@ import {
   PlusCircle,
   ClipboardList,
   LayoutList,
+  Palette,
 } from "lucide-react";
 import { AdminServicesPanel } from "@/components/admin/AdminServicesPanel";
 import { AdminLandingFormFieldsPanel } from "@/components/admin/AdminLandingFormFieldsPanel";
@@ -46,10 +47,13 @@ type AdminView =
   | "dashboard"
   | "orders"
   | "pricing"
+  | "graphic-design"
   | "enquiries"
   | "services-create"
   | "services-manage"
   | "landing-fields";
+
+const GD_PLAN_PRICING_KEYS: string[] = ["gd_weekly_plan_price", "gd_monthly_plan_price"];
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -166,8 +170,15 @@ const Admin = () => {
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "orders", label: "Orders", icon: ShoppingBag },
     { id: "pricing", label: "Pricing", icon: IndianRupee },
+    { id: "graphic-design", label: "Graphic design", icon: Palette },
     { id: "enquiries", label: "Enquiries", icon: MessageCircle },
   ];
+
+  const graphicDesignPricingRows =
+    pricing?.filter((p: { key: string }) => GD_PLAN_PRICING_KEYS.includes(p.key)) ?? [];
+  const sortedGraphicDesignPricing = [...graphicDesignPricingRows].sort(
+    (a: { key: string }, b: { key: string }) => GD_PLAN_PRICING_KEYS.indexOf(a.key) - GD_PLAN_PRICING_KEYS.indexOf(b.key)
+  );
 
   const servicesNav: { id: AdminView; label: string; icon: React.ElementType }[] = [
     { id: "services-create", label: "Create Service", icon: PlusCircle },
@@ -616,6 +627,65 @@ const Admin = () => {
                                   className="w-28"
                                   value={pricingEdits[p.id] ?? p.value}
                                   onChange={(e) => setPricingEdits({ ...pricingEdits, [p.id]: parseFloat(e.target.value) || 0 })}
+                                />
+                                <Button size="sm" variant="outline" onClick={() => savePricing(p.id)}>
+                                  <Save className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+
+              {view === "graphic-design" && (
+                <motion.div
+                  key="graphic-design"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                >
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Graphic design</h1>
+                  <p className="text-muted-foreground mb-6 max-w-2xl">
+                    Set weekly and monthly plan rates. They appear on the public Graphic design page; visitors can enter how many weeks or months they need and see an estimated total.
+                  </p>
+                  <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Palette className="h-5 w-5 text-primary" />
+                        Plan pricing
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {pricingLoading ? (
+                        <div className="py-8 text-center">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
+                        </div>
+                      ) : sortedGraphicDesignPricing.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No graphic design plan rows found. Run the latest database migration (adds{" "}
+                          <code className="text-xs bg-muted px-1 rounded">gd_weekly_plan_price</code> and{" "}
+                          <code className="text-xs bg-muted px-1 rounded">gd_monthly_plan_price</code>) then refresh.
+                        </p>
+                      ) : (
+                        <div className="space-y-4">
+                          {sortedGraphicDesignPricing.map((p: any) => (
+                            <div key={p.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                              <label className="text-sm font-medium text-foreground flex-1">{p.label}</label>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-muted-foreground">₹</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min={0}
+                                  className="w-32"
+                                  value={pricingEdits[p.id] ?? p.value}
+                                  onChange={(e) =>
+                                    setPricingEdits({ ...pricingEdits, [p.id]: parseFloat(e.target.value) || 0 })
+                                  }
                                 />
                                 <Button size="sm" variant="outline" onClick={() => savePricing(p.id)}>
                                   <Save className="w-4 h-4" />

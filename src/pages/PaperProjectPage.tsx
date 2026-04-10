@@ -356,6 +356,7 @@ const PaperProjectPage = () => {
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               ) : (
+                <>
                 {step === 1 && (
                   <div className="space-y-5">
                     {step1Fields.map((f) => renderDynamicField(f))}
@@ -610,6 +611,7 @@ const PaperProjectPage = () => {
                     </div>
                   </div>
                 )}
+                </>
               )}
             </CardContent>
           </Card>

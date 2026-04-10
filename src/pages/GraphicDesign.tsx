@@ -15,11 +15,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle, FileText, Mail, MessageCircle, Phone, Sparkles, Wand2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePricing } from "@/hooks/usePricing";
 import { SERVICE_CATEGORY_GRAPHIC, LANDING_FORM_CATEGORY_GRAPHIC } from "@/lib/serviceCategories";
 import { SERVICE_LUCIDE_ICONS, isIconImageUrl } from "@/lib/serviceIcons";
 import type { Tables } from "@/integrations/supabase/types";
 
 const POSTER_STARTING_PRICE = 299;
+
+const GD_WEEKLY_PRICE_KEY = "gd_weekly_plan_price";
+const GD_MONTHLY_PRICE_KEY = "gd_monthly_plan_price";
+
+function formatInr(n: number) {
+  return n.toLocaleString("en-IN", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function clampInt(v: number, min: number, max: number) {
+  if (!Number.isFinite(v)) return min;
+  return Math.min(max, Math.max(min, Math.floor(v)));
+}
 
 type LandingFieldRow = Tables<"landing_form_fields">;
 
@@ -167,6 +180,8 @@ const GraphicDesign = () => {
       return data ?? [];
     },
   });
+
+  const { data: pricingMap, isLoading: pricingLoading } = usePricing();
 
   const { data: graphicFormFields } = useQuery({
     queryKey: ["landing-form-fields", LANDING_FORM_CATEGORY_GRAPHIC],
@@ -335,6 +350,13 @@ const GraphicDesign = () => {
                     className="border-primary/20 hover:bg-primary/10 touch-manipulation"
                   >
                     View Portfolio
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => scrollToId("gd-plans")}
+                    className="border-primary/20 hover:bg-primary/10 touch-manipulation"
+                  >
+                    Weekly &amp; monthly plans
                   </Button>
                 </div>
 
@@ -530,6 +552,125 @@ const GraphicDesign = () => {
                       />
                     </>
                   )}
+            </div>
+          </div>
+        </section>
+
+        {/* Weekly & monthly plans (prices from admin `pricing` table) */}
+        <section id="gd-plans" className="py-14 sm:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Weekly &amp; monthly plans</h2>
+              <p className="mt-3 text-muted-foreground max-w-2xl">
+                Bundle inclusions below. Rates are set by your team in Admin → Graphic design; visitors can adjust duration to see an estimate.
+              </p>
+            </motion.div>
+
+            <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-primary/5 shadow-sm overflow-hidden">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl">Weekly plan</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="gd-weeks">No. of weeks</Label>
+                    <Input
+                      id="gd-weeks"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={520}
+                      value={numWeeks}
+                      onChange={(e) => setNumWeeks(clampInt(parseInt(e.target.value, 10) || 1, 1, 520))}
+                      className="max-w-[140px]"
+                    />
+                  </div>
+                  <ul className="text-sm text-muted-foreground space-y-2 list-none pl-0">
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Poster – 4</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Carousel – 1</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Story Poster – 2</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Brochure – 1</li>
+                  </ul>
+                  <div className="rounded-2xl border border-primary/10 bg-primary/5 px-4 py-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price</p>
+                    {pricingLoading ? (
+                      <p className="mt-1 text-sm text-muted-foreground">Loading…</p>
+                    ) : weeklyUnit > 0 ? (
+                      <div className="mt-1 space-y-0.5">
+                        <p className="text-lg font-semibold text-foreground">
+                          ₹{formatInr(weeklyUnit)} <span className="text-sm font-normal text-muted-foreground">per week</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          × {clampInt(numWeeks, 1, 520)} week{clampInt(numWeeks, 1, 520) === 1 ? "" : "s"} ≈{" "}
+                          <span className="font-semibold text-foreground">₹{formatInr(weeklyTotal)}</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Admin will set the weekly rate in the portal.{" "}
+                        <button type="button" onClick={() => scrollToId("contact")} className="text-primary underline underline-offset-2">
+                          Contact us
+                        </button>{" "}
+                        for a quote.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/10 bg-gradient-to-br from-white/95 to-violet-500/5 shadow-sm overflow-hidden">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl">Monthly plan</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-0">
+                  <div className="space-y-2">
+                    <Label htmlFor="gd-months">No. of months</Label>
+                    <Input
+                      id="gd-months"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={120}
+                      value={numMonths}
+                      onChange={(e) => setNumMonths(clampInt(parseInt(e.target.value, 10) || 1, 1, 120))}
+                      className="max-w-[140px]"
+                    />
+                  </div>
+                  <ul className="text-sm text-muted-foreground space-y-2 list-none pl-0">
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Poster – 17</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Carousel – 4</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Story Poster – 8</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Brochure – 4</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Logo Design</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> AI + Logo Design (1 time)</li>
+                    <li className="flex gap-2"><span className="text-primary font-medium">·</span> Business Card</li>
+                  </ul>
+                  <div className="rounded-2xl border border-primary/10 bg-violet-500/5 px-4 py-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Price</p>
+                    {pricingLoading ? (
+                      <p className="mt-1 text-sm text-muted-foreground">Loading…</p>
+                    ) : monthlyUnit > 0 ? (
+                      <div className="mt-1 space-y-0.5">
+                        <p className="text-lg font-semibold text-foreground">
+                          ₹{formatInr(monthlyUnit)} <span className="text-sm font-normal text-muted-foreground">per month</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          × {clampInt(numMonths, 1, 120)} month{clampInt(numMonths, 1, 120) === 1 ? "" : "s"} ≈{" "}
+                          <span className="font-semibold text-foreground">₹{formatInr(monthlyTotal)}</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Admin will set the monthly rate in the portal.{" "}
+                        <button type="button" onClick={() => scrollToId("contact")} className="text-primary underline underline-offset-2">
+                          Contact us
+                        </button>{" "}
+                        for a quote.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>

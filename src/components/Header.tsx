@@ -65,6 +65,7 @@ const Header = () => {
   const navLinks = [
     { label: "Home", to: "/" },
     { label: "Services", to: "/xerox-prints" },
+    { label: "Graphic design", to: "/graphic-design" },
     { label: "About", to: "/about" },
     { label: "Contact", to: "/contact" },
   ];
