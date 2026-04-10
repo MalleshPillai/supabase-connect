@@ -183,6 +183,14 @@ const GraphicDesign = () => {
 
   const { data: pricingMap, isLoading: pricingLoading } = usePricing();
 
+  const [numWeeks, setNumWeeks] = useState(1);
+  const [numMonths, setNumMonths] = useState(1);
+
+  const weeklyUnit = Number(pricingMap?.[GD_WEEKLY_PRICE_KEY] ?? 0);
+  const monthlyUnit = Number(pricingMap?.[GD_MONTHLY_PRICE_KEY] ?? 0);
+  const weeklyTotal = weeklyUnit * clampInt(numWeeks, 1, 520);
+  const monthlyTotal = monthlyUnit * clampInt(numMonths, 1, 120);
+
   const { data: graphicFormFields } = useQuery({
     queryKey: ["landing-form-fields", LANDING_FORM_CATEGORY_GRAPHIC],
     queryFn: async () => {
