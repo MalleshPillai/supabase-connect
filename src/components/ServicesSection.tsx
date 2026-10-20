@@ -8,15 +8,40 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { FileText, ArrowUpRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SERVICE_LUCIDE_ICONS, isIconImageUrl } from "@/lib/serviceIcons";
 
 interface ServicesSectionProps {
   searchQuery?: string;
 }
 
+/** Top-level (not defined during render) so icons don't remount on every render. */
+const ServiceIcon = ({ icon }: { icon: string | null | undefined }) => {
+  const url = icon && isIconImageUrl(icon) ? icon : null;
+  const [broken, setBroken] = useState(false);
+  if (url && !broken) {
+    return (
+      <img
+        src={url}
+        alt=""
+        className="h-full w-full object-contain p-1"
+        onError={() => setBroken(true)}
+      />
+    );
+  }
+
+  const LucideIcon =
+    icon && SERVICE_LUCIDE_ICONS[icon] ? SERVICE_LUCIDE_ICONS[icon] : FileText;
+
+  return <LucideIcon className="h-7 w-7" />;
+};
+
 const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
-  const { data: services, isLoading } = useQuery({
-    queryKey: ["services"],
+  // Distinct key from Header's ["services", "header-search"] lookup: sharing one
+  // key with a different select() shape made React Query reuse partial rows
+  // (id/name/slug only), which could leave this page looking empty/stuck.
+  const { data: services, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ["services", "xerox-prints"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("services")
@@ -27,6 +52,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
       if (error) throw error;
       return data;
     },
+    retry: 1,
   });
 
   const filtered = services?.filter(
@@ -48,27 +74,7 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
     show: { opacity: 1, y: 0 },
   };
 
-  const showEmpty = !isLoading && (!filtered || filtered.length === 0);
-
-  const ServiceIcon = ({ icon }: { icon: string | null | undefined }) => {
-    const url = icon && isIconImageUrl(icon) ? icon : null;
-    const [broken, setBroken] = useState(false);
-    if (url && !broken) {
-      return (
-        <img
-          src={url}
-          alt=""
-          className="h-full w-full object-contain p-1"
-          onError={() => setBroken(true)}
-        />
-      );
-    }
-
-    const LucideIcon =
-      icon && SERVICE_LUCIDE_ICONS[icon] ? SERVICE_LUCIDE_ICONS[icon] : FileText;
-
-    return <LucideIcon className="h-7 w-7" />;
-  };
+  const showEmpty = !isLoading && !isError && (!filtered || filtered.length === 0);
 
   return (
     <section id="xerox-services" className="py-24 bg-gradient-to-b from-transparent via-primary/5 to-primary/10">
@@ -104,8 +110,20 @@ const ServicesSection = ({ searchQuery }: ServicesSectionProps) => {
               </Card>
             ))}
           </div>
+        ) : isError ? (
+          <div className="text-center py-16 space-y-4">
+            <p className="text-lg font-medium text-foreground">Services could not be loaded</p>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {error instanceof Error ? error.message : "Please check your connection and try again."}
+            </p>
+            <Button onClick={() => refetch()} disabled={isFetching} className="min-h-[44px]">
+              {isFetching ? "Retrying…" : "Try again"}
+            </Button>
+          </div>
         ) : showEmpty ? (
-          <p className="text-center text-muted-foreground py-16 text-lg">No services available</p>
+          <p className="text-center text-muted-foreground py-16 text-lg">
+            {searchQuery ? "No services match your search" : "No services available"}
+          </p>
         ) : (
           <motion.div
             variants={container}

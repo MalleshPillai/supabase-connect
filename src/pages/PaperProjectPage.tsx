@@ -12,7 +12,6 @@ import { toast } from "@/hooks/use-toast";
 import { LANDING_FORM_CATEGORY_PAPER } from "@/lib/serviceCategories";
 import type { Tables } from "@/integrations/supabase/types";
 import { ArrowLeft, ArrowRight, CheckCircle, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 type FormFieldRow = Tables<"landing_form_fields">;
@@ -51,20 +50,16 @@ const PaperProjectPage = () => {
   });
 
   const [step, setStep] = useState(1);
-  const stepLabels = ["Project", "Details", "Sign in", "Done"];
-  const totalSteps = stepLabels.length;
+  const stepLabels = ["Project", "Details", "Done"];
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [values, setValues] = useState<Record<string, string>>({});
   const [files, setFiles] = useState<Record<string, File | null>>({});
-  const [password, setPassword] = useState("");
-  const [signingIn, setSigningIn] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [placed, setPlaced] = useState(false);
 
   const navigate = useNavigate();
-  const { user, loading: authLoading, signIn } = useAuth();
 
   const sortedFields = useMemo(() => fields ?? [], [fields]);
 
@@ -143,45 +138,8 @@ const PaperProjectPage = () => {
     return true;
   };
 
-  const handleSignInAndContinue = async () => {
-    if (placed) return;
-    if (user) {
-      setStep(4);
-      return;
-    }
-    const e = email.trim();
-    if (!e || !e.includes("@")) {
-      toast({ title: "Enter a valid email for sign in", variant: "destructive" });
-      return;
-    }
-    if (!password) {
-      toast({ title: "Enter your password", variant: "destructive" });
-      return;
-    }
-
-    setSigningIn(true);
-    try {
-      await signIn(e, password);
-      toast({ title: "Signed in", description: "Place your order when you're ready." });
-      setStep(4);
-    } catch (err) {
-      toast({
-        title: "Sign in failed",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSigningIn(false);
-    }
-  };
-
   const handlePlaceOrder = async () => {
     if (placed) return;
-    if (!user) {
-      toast({ title: "Please sign in to place your order", variant: "destructive" });
-      setStep(3);
-      return;
-    }
     if (!validateStep1() || !validateStep2()) return;
 
     setPlacing(true);
@@ -207,7 +165,7 @@ const PaperProjectPage = () => {
 
       toast({
         title: "Order placed!",
-        description: "We will review your paper project details and get back to you.",
+        description: "We will review your project report / research paper details and get back to you.",
       });
       setPlaced(true);
       // Keep values for the confirmation view; user can start a new request from below.
@@ -315,10 +273,18 @@ const PaperProjectPage = () => {
       <Header />
       <main className="flex-1 py-12 sm:py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Paper projects</h1>
-          <p className="mt-3 text-muted-foreground">
-            Tell us about your paper project — we will review your details and get back to you.
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+            Project Reports &amp; Research Papers
+          </h1>
+          <div className="mt-3 space-y-2 text-muted-foreground">
+            <p>
+              Academic projects for MBA, MCA, M.Com, BCA, BBA, B.Com, B.Sc, and BA
+              (Documentation/Manuscripts Only — No Prototype or Hardware)
+            </p>
+            <p>Engineering Project Manuals along with IEEE Research Papers.</p>
+            <p>Working Models are available only for B.Ed and M.Ed projects.</p>
+            <p>Tell us about your project — we will review your details and get back to you.</p>
+          </div>
 
           <div className="mt-8 overflow-x-auto overflow-y-hidden -mx-4 px-4 sm:mx-0 sm:px-0 pb-2">
             <div className="flex items-center justify-center gap-2 min-w-max">
@@ -347,11 +313,11 @@ const PaperProjectPage = () => {
           <Card className="mt-8 border-primary/10 shadow-sm">
             <CardHeader>
               <CardTitle>
-                {step === 1 ? "Project details" : step === 2 ? "Student details" : step === 3 ? "Sign in" : "Review & place order"}
+                {step === 1 ? "Project details" : step === 2 ? "Student details" : "Review & place order"}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {isLoading || authLoading ? (
+              {isLoading ? (
                 <div className="flex justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
@@ -413,53 +379,13 @@ const PaperProjectPage = () => {
 
                 {step === 3 && (
                   <div className="space-y-5">
-                    {user ? (
-                      <div className="rounded-lg border border-primary/10 bg-primary/5 p-4 space-y-1">
-                        <div className="flex items-center gap-2 text-primary">
-                          <CheckCircle className="w-5 h-5" />
-                          <span className="font-medium">Signed in</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          You can place your paper project request in the next step.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-5">
-                        <div className="space-y-2">
-                          <Label htmlFor="pp-login-email">Email *</Label>
-                          <Input
-                            id="pp-login-email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            maxLength={200}
-                            autoComplete="email"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="pp-password">Password *</Label>
-                          <Input
-                            id="pp-password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            autoComplete="current-password"
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {step === 4 && (
-                  <div className="space-y-5">
                     {placed ? (
                       <div className="text-center space-y-4">
                         <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
                         <div>
                           <h3 className="text-2xl font-bold text-foreground mb-2">Order Placed!</h3>
                           <p className="text-muted-foreground">
-                            We will review your paper project details and get back to you.
+                            We will review your project report / research paper details and get back to you.
                           </p>
                         </div>
                       </div>
@@ -487,7 +413,7 @@ const PaperProjectPage = () => {
                   </div>
                 )}
 
-                {step !== 4 && (
+                {step !== 3 && (
                   <div className="flex justify-between gap-3 mt-6 pt-4 border-t">
                     <Button
                       type="button"
@@ -520,29 +446,10 @@ const PaperProjectPage = () => {
                         Next <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
                     )}
-                    {step === 3 && (
-                      <Button
-                        type="button"
-                        onClick={handleSignInAndContinue}
-                        disabled={signingIn}
-                        className="min-h-[44px] touch-manipulation shrink-0"
-                      >
-                        {signingIn ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Signing in…
-                          </>
-                        ) : (
-                          <>
-                            {user ? "Continue" : "Sign in & Continue"} <ArrowRight className="w-4 h-4 ml-1" />
-                          </>
-                        )}
-                      </Button>
-                    )}
                   </div>
                 )}
 
-                {step === 4 && !placed && (
+                {step === 3 && !placed && (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -564,7 +471,7 @@ const PaperProjectPage = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setStep(3)}
+                        onClick={() => setStep(2)}
                         disabled={placing}
                         className="min-h-[44px] touch-manipulation shrink-0"
                       >
@@ -583,7 +490,7 @@ const PaperProjectPage = () => {
                   </form>
                 )}
 
-                {step === 4 && placed && (
+                {step === 3 && placed && (
                   <div className="mt-6 pt-4 border-t space-y-4">
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Button
@@ -597,7 +504,6 @@ const PaperProjectPage = () => {
                         onClick={() => {
                           setStep(1);
                           setPlaced(false);
-                          setPassword("");
                           setFullName("");
                           setPhone("");
                           setEmail("");

@@ -7,9 +7,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  /** Admin-only sign-in (email/password). There is no customer sign-up/login. */
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: (redirectTo?: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -59,29 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (error) throw error;
-  };
-
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-  };
-
-  /** redirectTo must be a full URL on your site (e.g. after Google OAuth). Enable Google in Supabase → Authentication → Providers. */
-  const signInWithGoogle = async (redirectTo?: string) => {
-    const url = redirectTo?.startsWith("http")
-      ? redirectTo
-      : `${window.location.origin}${redirectTo?.startsWith("/") ? redirectTo : `/${redirectTo || "auth"}`}`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: url },
-    });
     if (error) throw error;
   };
 
@@ -91,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signUp, signIn, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

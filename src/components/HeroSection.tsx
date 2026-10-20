@@ -72,7 +72,7 @@ const HeroSection = () => {
             className="inline-flex flex-wrap items-center gap-2 rounded-full border border-amber-400/30 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-100 backdrop-blur-sm mb-6 sm:mb-8 shadow-lg shadow-black/10 max-w-full"
           >
             <Sparkles className="h-4 w-4 text-amber-300 shrink-0" />
-            <span className="text-balance">Thesis, reports & paper projects — we’ve got you</span>
+            <span className="text-balance">Thesis, project reports & research papers — we’ve got you</span>
           </motion.div>
 
           <motion.p

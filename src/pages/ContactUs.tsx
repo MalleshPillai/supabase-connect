@@ -57,8 +57,13 @@ const ContactUs = () => {
               <div className="space-y-4">
                 {[
                   { icon: Phone, label: "Phone", value: "+91 93639 26173" },
-                  { icon: Mail, label: "Email", value: "info@precisionscripthub.com" },
-                  { icon: MapPin, label: "Address", value: "123 Print Street, Document City, IN 400001" },
+                  { icon: Mail, label: "Email", value: "precisionscripthub@gmail.com" },
+                  {
+                    icon: MapPin,
+                    label: "Address",
+                    value:
+                      "North Bharathiyar Nagar, Manaparai, Tamil Nadu, District Tiruchirappalli, Pin – 621306",
+                  },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-4 p-4 bg-gradient-to-br from-white/90 to-primary/10 rounded-xl border border-primary/10">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">

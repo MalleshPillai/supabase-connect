@@ -7,8 +7,9 @@ import { FileText, Palette, Printer, ArrowRight } from "lucide-react";
 
 const categories = [
   {
-    title: "Paper projects",
-    description: "Thesis, journals, reports — share your title, abstract, and files so we can work with you.",
+    title: "Project Reports & Research Papers",
+    description:
+      "Academic projects for MBA, MCA, M.Com, BCA, BBA, B.Com, B.Sc and BA (documentation/manuscripts only), Engineering manuals with IEEE research papers, and working models for B.Ed & M.Ed.",
     href: "/paper-project",
     icon: FileText,
     action: "Start a project",
@@ -50,7 +51,7 @@ const LandingCategoriesSection = () => {
             What do you need today?
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Paper projects, design, or print services — we guide you end-to-end and deliver your final work.
+            Project reports &amp; research papers, design, or print services — we guide you end-to-end and deliver your final work.
           </p>
         </motion.div>
 

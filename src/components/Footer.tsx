@@ -1,7 +1,15 @@
 import { Link } from "react-router-dom";
-import { Phone, Mail, MapPin, ArrowUpRight } from "lucide-react";
+import { Phone, Mail, MapPin, ArrowUpRight, Shield } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+
+export const CONTACT_EMAIL = "precisionscripthub@gmail.com";
+export const CONTACT_ADDRESS =
+  "North Bharathiyar Nagar, Manaparai, Tamil Nadu, District Tiruchirappalli, Pin – 621306";
 
 const Footer = () => {
+  const { isAdmin } = useAuth();
+
   return (
     <footer className="relative border-t border-primary/20 text-slate-100 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-primary/90 to-slate-900 pointer-events-none" />
@@ -19,6 +27,20 @@ const Footer = () => {
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
               Your trusted partner for professional printing, binding, and document services. Quality you can count on.
             </p>
+            {/* Explicit Admin Login — the only login on the site (Admin-only) */}
+            <div className="mt-6">
+              <Link to={isAdmin ? "/admin" : "/auth"} className="inline-block">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full px-5 min-h-[44px] border-white/40 bg-white/10 text-white hover:bg-white hover:text-slate-900 shadow-md touch-manipulation"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  {isAdmin ? "Admin Dashboard" : "Admin Login"}
+                </Button>
+              </Link>
+              <p className="mt-2 text-xs text-slate-500">For Precision Script Hub staff only.</p>
+            </div>
           </div>
 
           {/* Quick Links */}
@@ -57,11 +79,11 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@precisionscripthub.com" className="flex items-center gap-3 min-h-[44px] py-2 hover:text-white transition-colors touch-manipulation">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-center gap-3 min-h-[44px] py-2 hover:text-white transition-colors touch-manipulation">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10">
                     <Mail className="h-4 w-4" />
                   </span>
-                  <span className="break-all">info@precisionscripthub.com</span>
+                  <span className="break-all">{CONTACT_EMAIL}</span>
                 </a>
               </li>
               <li>
@@ -69,7 +91,7 @@ const Footer = () => {
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10">
                     <MapPin className="h-4 w-4 mt-0.5" />
                   </span>
-                  123 Print Street, Document City, IN 400001
+                  <span>{CONTACT_ADDRESS}</span>
                 </span>
               </li>
             </ul>
@@ -80,7 +102,7 @@ const Footer = () => {
           <p className="text-sm text-slate-500">
             © {new Date().getFullYear()} Precision Script Hub. All rights reserved.
           </p>
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center">
             <a
               href="https://wa.me/919363926173"
               target="_blank"
@@ -89,9 +111,15 @@ const Footer = () => {
             >
               WhatsApp
             </a>
-            <a href="mailto:info@precisionscripthub.com" className="text-sm text-slate-500 hover:text-white transition-colors min-h-[44px] flex items-center touch-manipulation">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-sm text-slate-500 hover:text-white transition-colors min-h-[44px] flex items-center touch-manipulation">
               Email
             </a>
+            <Link
+              to={isAdmin ? "/admin" : "/auth"}
+              className="text-sm font-medium text-slate-300 hover:text-white transition-colors min-h-[44px] flex items-center gap-1.5 touch-manipulation"
+            >
+              <Shield className="h-4 w-4" /> {isAdmin ? "Admin Dashboard" : "Admin Login"}
+            </Link>
           </div>
         </div>
       </div>

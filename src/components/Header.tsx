@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, Search, LogOut, Shield } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   const { data: services } = useQuery({
-    queryKey: ["services"],
+    queryKey: ["services", "header-search"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("services")
@@ -186,6 +186,9 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {/* No public login in the top nav — login is Admin-only, via the
+                explicit "Admin Login" button in the footer. Admin/Logout only
+                appear here after an admin has already signed in. */}
             {isAdmin && (
               <Link
                 to="/admin"
@@ -194,7 +197,7 @@ const Header = () => {
                 <Shield className="h-4 w-4" /> Admin
               </Link>
             )}
-            {user ? (
+            {user && isAdmin && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -203,12 +206,6 @@ const Header = () => {
               >
                 <LogOut className="h-4 w-4 mr-1.5" /> Logout
               </Button>
-            ) : (
-              <Link to="/auth" className="ml-2">
-                <Button size="sm" className="rounded-full px-4 shadow-md shadow-primary/20 hover:shadow-primary/30">
-                  <User className="h-4 w-4 mr-1.5" /> Login
-                </Button>
-              </Link>
             )}
           </nav>
 
@@ -304,7 +301,7 @@ const Header = () => {
                     <Shield className="h-4 w-4" /> Admin
                   </Link>
                 )}
-                {user ? (
+                {user && isAdmin && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -313,12 +310,6 @@ const Header = () => {
                   >
                     <LogOut className="h-4 w-4 mr-2" /> Logout
                   </Button>
-                ) : (
-                  <Link to="/auth" onClick={() => setMobileOpen(false)} className="mt-2 block">
-                    <Button size="sm" className="w-full rounded-full min-h-[44px] touch-manipulation">
-                      <User className="h-4 w-4 mr-2" /> Login
-                    </Button>
-                  </Link>
                 )}
               </div>
             </div>

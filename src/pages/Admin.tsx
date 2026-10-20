@@ -65,7 +65,8 @@ const Admin = () => {
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       toast({ title: "Access denied", variant: "destructive" });
-      navigate("/");
+      // Not signed in → Admin Login (footer / /auth). Signed in but not admin → home.
+      navigate(user ? "/" : "/auth", { replace: true });
     }
   }, [user, isAdmin, authLoading, navigate]);
 

@@ -855,9 +855,9 @@ const GraphicDesign = () => {
                             <Phone className="w-4 h-4" />
                             +91 63749 39846
                           </span>
-                          <a href="mailto:info@precisionscripthub.com" className="hover:underline inline-flex items-center gap-2">
+                          <a href="mailto:precisionscripthub@gmail.com" className="hover:underline inline-flex items-center gap-2">
                             <Mail className="w-4 h-4" />
-                            info@precisionscripthub.com
+                            precisionscripthub@gmail.com
                           </a>
                         </div>
                       </form>
